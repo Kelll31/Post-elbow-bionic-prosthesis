@@ -1,0 +1,345 @@
+#include <Servo.h>
+#include <microWire.h>
+#include <microLiquidCrystal_I2C.h>
+
+#include <EEPROM.h> // Подключаем библиотеку
+
+#define korector 12 // Задаем корректор чистки
+#define FirstLaunchButton 9
+#define ElectrodeR 10
+#define ElectrodeL 11
+#define Pishalka 12
+
+Servo mizinec;
+Servo bezimani;
+Servo fuck;
+Servo ukozatel;
+Servo big;
+Servo ladon;
+Servo povorot;
+
+LiquidCrystal_I2C lcd(0x27, 20, 4); // Задаем адрес Lcd монитора
+
+int SignalSDatchika; // Аналоговый сигнал с датчика
+int i; // Сдвиговый регистр
+
+byte index; // Индекс для очистки
+int val_0[3]; // Первый этап очистки (Масcив)
+int val_Srednie_1[3]; // Среднее арифметические 2 (Массив)
+int Srednie_1; // Среднее арифметические 1 (Целое единственное число)
+int Srednie_2; // Среднее арифметические 2 (Целое единственное число)
+
+byte  flash[3000]; //Значения во flash
+
+byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
+byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
+
+void setup() {
+  i = 0;
+  pinMode(FirstLaunchButton, INPUT);
+  pinMode(ElectrodeR, INPUT);
+  pinMode(ElectrodeL, INPUT);
+  pinMode(Pishalka, OUTPUT);
+  mizinec.attach(32);
+  bezimani.attach(33);
+  fuck.attach(34);
+  ukozatel.attach(35);
+  big.attach(36);
+  ladon.attach(37);
+  povorot.attach(38);
+
+  lcd.init();  // Инициализируем Lcd
+  lcd.init();  // Инициализируем Lcd X2
+  lcd.backlight();
+  lcd.setCursor(0, 1);
+  lcd.print("Kelll31 Technology");
+  lcd.createChar(0, levo8bit);
+  lcd.createChar(1, pravo8bit);
+  lcd.setCursor(18, 1);
+  lcd.write(0);
+  lcd.write(1);
+  delay(3000);
+  if (digitalRead(FirstLaunchButton) == 1) {
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print("First Launch");
+    delay(3000);
+    SearchSzhatie();
+    Pisk();
+    delay(3000);
+    SearchRazhatie();
+    Pisk();
+    delay(3000);
+    SearchPovorotVLevo();
+    Pisk();
+    delay(3000);
+    SearchPovorotVPravo();
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print("First Launch");
+    lcd.setCursor(8, 1);
+    lcd.print("Ok");
+    Pisk();
+    Pisk();
+    delay(3000);
+  }
+  SearchValues();
+  delay(1000);
+}
+
+void loop() {
+  if (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
+    proverka();
+  }
+  Sravnenie();
+
+}
+
+void Pisk() {
+  digitalWrite(Pishalka, HIGH);
+  delay(250);
+  digitalWrite(Pishalka, LOW);
+  delay(250);
+}
+
+void SzhadieDo() {
+  //Здесь должен быть код
+
+}
+
+void RazhatieDo() {
+  //Здесь должен быть код
+
+}
+
+void PovorotVLevoDo() {
+  //Здесь должен быть код
+
+
+}
+
+void PovorotVPravoDo() {
+  //Здесь должен быть код
+
+}
+
+void Sravnenie() {
+nachalo:
+  lcd.clear();
+  lcd.home();
+  lcd.print("Normal mode");
+  lcd.setCursor(0, 1);
+  lcd.print(Srednie_2);
+  delay(5);
+  i = 0;
+  chistka();
+  logika();
+  while (i < 2999) {
+    i = i + 1;
+    if ((i <= 750)  && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
+      SzhadieDo();
+    }
+    else {
+      goto nachalo;
+    }
+    if ((((i >= 750) && (i <= 1500))) &&  ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
+      RazhatieDo();
+    }
+    else {
+      goto nachalo;
+    }
+    if ((((i >= 1500) && (i <= 2250)))   && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
+      PovorotVLevoDo();
+    }
+    else {
+      goto nachalo;
+    }
+    if ((((i >= 2250) && (i <= 2999)))  && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
+      PovorotVPravoDo();
+    }
+    else {
+      goto nachalo;
+    }
+  }
+
+}
+
+void SearchSzhatie() {
+  i = 0;
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("Szhozmite hand");
+  delay(4000);
+  Pisk();
+  lcd.setCursor(1, 2);
+  lcd.print("Write to memory...");
+  while (i < 750) {
+    i = i + 1;
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory...");
+    delay(2);
+    chistka();
+    logika();
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory..");
+    delay(3);
+    VEEPROM();
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Szhatie = Ok");
+}
+
+void SearchRazhatie() {
+  i = 750;
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("Razoshmite hand");
+  delay(4000);
+  Pisk();
+  lcd.setCursor(1, 2);
+  lcd.print("Write to memory...");
+  while (i < 1500) {
+    i = i + 1;
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory...");
+    delay(2);
+    chistka();
+    logika();
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory..");
+    delay(3);
+    VEEPROM();
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Razhatie = Ok");
+}
+
+void SearchPovorotVLevo() {
+  i = 1500;
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("Povernite hand");
+  lcd.setCursor(3, 1);
+  lcd.print("V Levo");
+  delay(4000);
+  Pisk();
+  lcd.setCursor(1, 2);
+  lcd.print("Write to memory...");
+  while (i < 2250) {
+    i = i + 1;
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory...");
+    delay(2);
+    chistka();
+    logika();
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory..");
+    delay(3);
+    VEEPROM();
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Povorot V Levo = Ok");
+}
+
+void SearchPovorotVPravo() {
+  i = 2250;
+  lcd.clear();
+  lcd.setCursor(1, 0);
+  lcd.print("Povernite hand");
+  lcd.setCursor(3, 1);
+  lcd.print("V Pravo");
+  delay(3000);
+  Pisk();
+  lcd.setCursor(1, 2);
+  lcd.print("Write to memory...");
+  while (i < 3000) {
+    i = i + 1;
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory...");
+    delay(2);
+    chistka();
+    logika();
+    lcd.clear();
+    lcd.setCursor(1, 2);
+    lcd.print("Write to memory..");
+    delay(3);
+    VEEPROM();
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Povorot V Pravo = Ok");
+}
+
+void VEEPROM() {
+  EEPROM.update(i, Srednie_2);
+}
+
+void SearchValues() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Search values");
+  lcd.setCursor(1, 1);
+  lcd.print("in EEPROM");
+  while (i < 2999) {
+    i = i + 1;
+    lcd.setCursor(0, 2);
+    lcd.print(i);
+    flash[i] = EEPROM.read(i);
+  }
+  lcd.setCursor(10, 2);
+  lcd.print("Ok");
+  Pisk();
+  delay(250);
+  Pisk();
+}
+
+void proverka() {
+  while (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
+    lcd.clear();
+    lcd.home();
+    lcd.print("No electrodes connected");
+    lcd.setCursor(0, 1);
+    lcd.print("Waiting for connection");
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Electrodes found");
+  delay(3000);
+}
+
+void chistka() {
+
+  SignalSDatchika = analogRead(A0);
+
+  if (index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
+  val_0[index] = SignalSDatchika; // записываем значение с датчика в массив
+  index = index + 1;
+
+  if (index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
+  val_Srednie_1[index] = Srednie_1;
+  index = index + 1;
+
+}
+
+void logika() {
+
+
+  if (SignalSDatchika >= korector) {
+    Srednie_1 = (val_0[0] + val_0[1] + val_0[2]) / 3;
+  }
+
+  if (val_Srednie_1[0] >= 1 || val_Srednie_1[1] >= 1 || val_Srednie_1[2] >= 1) {
+    Srednie_2 = (val_Srednie_1[0] + val_Srednie_1[1] + val_Srednie_1[2]) / 3;
+  }
+  Srednie_2 = map(Srednie_2, 0, 820, 0, 255);
+}
