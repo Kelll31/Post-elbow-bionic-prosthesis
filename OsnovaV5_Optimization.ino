@@ -1,14 +1,26 @@
-#include <Servo.h>
-#include <microWire.h>
-#include <microLiquidCrystal_I2C.h>
-
+#include <Adafruit_GFX.h>
+#include <gfxfont.h>
+#include <Servo.h> // Подключаем библиотеку
+#include <microWire.h> // Подключаем библиотеку
+#include <microLiquidCrystal_I2C.h> // Подключаем библиотеку
 #include <EEPROM.h> // Подключаем библиотеку
 
 #define korector 12 // Задаем корректор чистки
-#define FirstLaunchButton 9
 #define ElectrodeR 10
 #define ElectrodeL 11
 #define Pishalka 12
+#define AllServo 5
+#define TranzistorsA 2
+#define TranzistorsB 3
+#define TranzistorsC 4
+#define KeyA 8
+#define KeyB 7
+
+#define potmizinec A1
+#define potbezimani A2
+#define potfuck A3
+#define potukozatel A4
+#define potbig A5
 
 Servo mizinec;
 Servo bezimani;
@@ -18,25 +30,28 @@ Servo big;
 Servo ladon;
 Servo povorot;
 
-LiquidCrystal_I2C lcd(0x27, 20, 4); // Задаем адрес Lcd монитора
+LiquidCrystal_I2C lcd(0x3F, 20, 4); // Задаем адрес Lcd монитора
 
 int SignalSDatchika; // Аналоговый сигнал с датчика
 int i; // Сдвиговый регистр
+byte x; //Сдвиговый регистр для Датчика
 
 byte index; // Индекс для очистки
 int val_0[3]; // Первый этап очистки (Масcив)
 int val_Srednie_1[3]; // Среднее арифметические 2 (Массив)
 int Srednie_1; // Среднее арифметические 1 (Целое единственное число)
 int Srednie_2; // Среднее арифметические 2 (Целое единственное число)
-
+int ServoMemory[10];
 byte  flash[3000]; //Значения во flash
+byte KorektorSravnenia;
 
 byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
 void setup() {
   i = 0;
-  pinMode(FirstLaunchButton, INPUT);
+  pinMode(KeyA, INPUT);
+  pinMode(KeyB, INPUT);
   pinMode(ElectrodeR, INPUT);
   pinMode(ElectrodeL, INPUT);
   pinMode(Pishalka, OUTPUT);
@@ -47,6 +62,7 @@ void setup() {
   big.attach(36);
   ladon.attach(37);
   povorot.attach(38);
+  KorektorSravnenia = 93; //Основной корректор сравнения для логики
 
   lcd.init();  // Инициализируем Lcd
   lcd.init();  // Инициализируем Lcd X2
@@ -59,7 +75,7 @@ void setup() {
   lcd.write(0);
   lcd.write(1);
   delay(3000);
-  if (digitalRead(FirstLaunchButton) == 1) {
+  if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB) == 1))  {
     lcd.clear();
     lcd.setCursor(1, 0);
     lcd.print("First Launch");
@@ -80,10 +96,12 @@ void setup() {
     lcd.setCursor(8, 1);
     lcd.print("Ok");
     Pisk();
+    NastroikaServo();
     Pisk();
     delay(3000);
   }
   SearchValues();
+  digitalWrite(AllServo, HIGH);
   delay(1000);
 }
 
@@ -103,13 +121,19 @@ void Pisk() {
 }
 
 void SzhadieDo() {
-  //Здесь должен быть код
-
+  mizinec.write(ServoMemory[1]);
+  bezimani.write(ServoMemory[3]);
+  fuck.write(ServoMemory[5]);
+  ukozatel.write(ServoMemory[7]);
+  big.write(ServoMemory[9]);
 }
 
 void RazhatieDo() {
-  //Здесь должен быть код
-
+  mizinec.write(ServoMemory[0]);
+  bezimani.write(ServoMemory[2]);
+  fuck.write(ServoMemory[4]);
+  ukozatel.write(ServoMemory[6]);
+  big.write(ServoMemory[8]);
 }
 
 void PovorotVLevoDo() {
@@ -123,17 +147,109 @@ void PovorotVPravoDo() {
 
 }
 
+void NastroikaServo() {
+  digitalWrite(AllServo, LOW);
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  lcd.setCursor(0, 1);
+  lcd.print("Minimal");
+  Pisk();
+  while (KeyA < 1) {
+    ServoMemory[0] = analogRead(potmizinec);
+    ServoMemory[0] = map(ServoMemory[0], 0, 1024 , 0, 255);
+    ServoMemory[2] = analogRead(potbezimani);
+    ServoMemory[2] = map(ServoMemory[2], 0, 1024 , 0, 255);
+    ServoMemory[4] = analogRead(potfuck);
+    ServoMemory[4] = map(ServoMemory[4], 0, 1024 , 0, 255);
+    ServoMemory[6] = analogRead(potukozatel);
+    ServoMemory[6] = map(ServoMemory[6], 0, 1024 , 0, 255);
+    ServoMemory[8] = analogRead(potbig);
+    ServoMemory[8] = map(ServoMemory[8], 0, 1024 , 0, 255);
+    EEPROM.update(3000, ServoMemory[0]);
+    EEPROM.update(3002, ServoMemory[2]);
+    EEPROM.update(3004, ServoMemory[3]);
+    EEPROM.update(3006, ServoMemory[4]);
+    EEPROM.update(3008, ServoMemory[5]);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  lcd.setCursor(0, 1);
+  lcd.print("Maximal");
+  delay(1000);
+  Pisk();
+  while (KeyA < 1) {
+    ServoMemory[1] = analogRead(potmizinec);
+    ServoMemory[1] = map(ServoMemory[1], 0, 1024 , 0, 255);
+    ServoMemory[3] = analogRead(potbezimani);
+    ServoMemory[3] = map(ServoMemory[3], 0, 1024 , 0, 255);
+    ServoMemory[5] = analogRead(potfuck);
+    ServoMemory[5] = map(ServoMemory[5], 0, 1024 , 0, 255);
+    ServoMemory[7] = analogRead(potukozatel);
+    ServoMemory[7] = map(ServoMemory[7], 0, 1024 , 0, 255);
+    ServoMemory[9] = analogRead(potbig);
+    ServoMemory[9] = map(ServoMemory[9], 0, 1024 , 0, 255);
+    EEPROM.update(3001, ServoMemory[1]);
+    EEPROM.update(3003, ServoMemory[3]);
+    EEPROM.update(3005, ServoMemory[5]);
+    EEPROM.update(3007, ServoMemory[7]);
+    EEPROM.update(3009, ServoMemory[9]);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  lcd.setCursor(0, 1);
+  lcd.print("Ok");
+  Pisk();
+  delay(1000);
+}
+
 void Sravnenie() {
-nachalo:
   lcd.clear();
   lcd.home();
   lcd.print("Normal mode");
   lcd.setCursor(0, 1);
   lcd.print(Srednie_2);
-  delay(5);
-  i = 0;
+  delay(3);
   chistka();
   logika();
+  i = 0;
+  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+    SzhadieDo();
+    i = i++;
+    if (i > 749) i = 720;
+  }
+  i = 750;
+  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+    RazhatieDo();
+    i = i++;
+    if (i > 1499) i = 1470;
+  }
+  i = 1500;
+  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+    PovorotVPravoDo();
+    i = i++;
+    if (i > 2249) i = 2220;
+  }
+  i = 2250;
+  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+    PovorotVLevoDo();
+    i = i++;
+    if (i > 2999) i = 2969;
+  }
+
+}
+
+/*   //Это всё хуйня, переделывай!
   while (i < 2999) {
     i = i + 1;
     if ((i <= 750)  && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
@@ -161,31 +277,24 @@ nachalo:
       goto nachalo;
     }
   }
-
-}
+*/
 
 void SearchSzhatie() {
   i = 0;
   lcd.clear();
   lcd.setCursor(1, 0);
   lcd.print("Szhozmite hand");
-  delay(4000);
+  delay(3000);
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while (i < 750) {
-    i = i + 1;
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory...");
     delay(2);
     chistka();
     logika();
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory..");
     delay(3);
     VEEPROM();
+    i = i + 1;
   }
   lcd.clear();
   lcd.home();
@@ -197,21 +306,15 @@ void SearchRazhatie() {
   lcd.clear();
   lcd.setCursor(1, 0);
   lcd.print("Razoshmite hand");
-  delay(4000);
+  delay(3000);
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while (i < 1500) {
     i = i + 1;
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory...");
     delay(2);
     chistka();
     logika();
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory..");
     delay(3);
     VEEPROM();
   }
@@ -227,21 +330,15 @@ void SearchPovorotVLevo() {
   lcd.print("Povernite hand");
   lcd.setCursor(3, 1);
   lcd.print("V Levo");
-  delay(4000);
+  delay(3000);
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while (i < 2250) {
     i = i + 1;
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory...");
     delay(2);
     chistka();
     logika();
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory..");
     delay(3);
     VEEPROM();
   }
@@ -263,15 +360,9 @@ void SearchPovorotVPravo() {
   lcd.print("Write to memory...");
   while (i < 3000) {
     i = i + 1;
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory...");
     delay(2);
     chistka();
     logika();
-    lcd.clear();
-    lcd.setCursor(1, 2);
-    lcd.print("Write to memory..");
     delay(3);
     VEEPROM();
   }
@@ -285,16 +376,17 @@ void VEEPROM() {
 }
 
 void SearchValues() {
+  i = 0;
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Search values");
   lcd.setCursor(1, 1);
   lcd.print("in EEPROM");
   while (i < 2999) {
-    i = i + 1;
     lcd.setCursor(0, 2);
     lcd.print(i);
     flash[i] = EEPROM.read(i);
+    i = i + 1;
   }
   lcd.setCursor(10, 2);
   lcd.print("Ok");
@@ -313,7 +405,7 @@ void proverka() {
   }
   lcd.clear();
   lcd.home();
-  lcd.print("Electrodes found");
+  lcd.print("Electrodes found!");
   delay(3000);
 }
 
@@ -341,5 +433,5 @@ void logika() {
   if (val_Srednie_1[0] >= 1 || val_Srednie_1[1] >= 1 || val_Srednie_1[2] >= 1) {
     Srednie_2 = (val_Srednie_1[0] + val_Srednie_1[1] + val_Srednie_1[2]) / 3;
   }
-  Srednie_2 = map(Srednie_2, 0, 820, 0, 255);
+  Srednie_2 = map(Srednie_2, 0, 900, 0, 255);
 }
