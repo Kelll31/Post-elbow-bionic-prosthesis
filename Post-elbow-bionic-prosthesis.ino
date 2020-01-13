@@ -238,6 +238,7 @@ void Sravnenie() {
   chistka();
   logika();
   i = 0;
+  
   if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]))) >= KorektorSravnenia) {
  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     SzhadieDo();
@@ -246,18 +247,21 @@ void Sravnenie() {
   }
   }
   i = 750;
+  
   while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     RazhatieDo();
     i = i++;
     if (i > 1499) i = 1470;
   }
   i = 1500;
+  
   while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     PovorotVPravoDo();
     i = i++;
     if (i > 2249) i = 2220;
   }
   i = 2250;
+  
   while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     PovorotVLevoDo();
     i = i++;
