@@ -38,9 +38,14 @@ byte x; //Сдвиговый регистр для Датчика
 
 byte index; // Индекс для очистки
 int val_0[3]; // Первый этап очистки (Масcив)
-int val_Srednie_1[3]; // Среднее арифметические 2 (Массив)
-int Srednie_1; // Среднее арифметические 1 (Целое единственное число)
-int Srednie_2; // Среднее арифметические 2 (Целое единственное число)
+int val_1[3]; // Среднее арифметические 2 (Массив)
+int Srednie_0; // Среднее арифметические 1 (Целое единственное число)
+int Srednie_1; // Среднее арифметические 2 (Целое единственное число)
+int Summa1[10]; //Сумма для работы с датчиком
+int SummaDo1[10]; //Сумма для работы с памятью (действие 1)
+int SummaDo2[10]; //Сумма для работы с памятью (действие 2)
+int SummaDo3[10]; //Сумма для работы с памятью (действие 3)
+int SummaDo4[10]; //Сумма для работы с памятью (действие 4)
 int ServoMemory[10];
 byte  flash[3000]; //Значения во flash
 byte KorektorSravnenia;
@@ -49,7 +54,9 @@ byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B1010
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
 void setup() {
+
   i = 0;
+  x = 0;
   pinMode(KeyA, INPUT);
   pinMode(KeyB, INPUT);
   pinMode(ElectrodeR, INPUT);
@@ -106,6 +113,7 @@ void setup() {
 }
 
 void loop() {
+
   if (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
     proverka();
   }
@@ -114,6 +122,7 @@ void loop() {
 }
 
 void Pisk() {
+
   digitalWrite(Pishalka, HIGH);
   delay(250);
   digitalWrite(Pishalka, LOW);
@@ -121,6 +130,7 @@ void Pisk() {
 }
 
 void SzhadieDo() {
+
   mizinec.write(ServoMemory[1]);
   bezimani.write(ServoMemory[3]);
   fuck.write(ServoMemory[5]);
@@ -129,6 +139,7 @@ void SzhadieDo() {
 }
 
 void RazhatieDo() {
+
   mizinec.write(ServoMemory[0]);
   bezimani.write(ServoMemory[2]);
   fuck.write(ServoMemory[4]);
@@ -137,17 +148,20 @@ void RazhatieDo() {
 }
 
 void PovorotVLevoDo() {
+
   //Здесь должен быть код
 
 
 }
 
 void PovorotVPravoDo() {
+
   //Здесь должен быть код
 
 }
 
 void NastroikaServo() {
+
   digitalWrite(AllServo, LOW);
   Pisk();
   lcd.clear();
@@ -214,34 +228,37 @@ void NastroikaServo() {
 }
 
 void Sravnenie() {
+
   lcd.clear();
   lcd.home();
   lcd.print("Normal mode");
   lcd.setCursor(0, 1);
-  lcd.print(Srednie_2);
+  lcd.print(Srednie_1);
   delay(3);
   chistka();
   logika();
   i = 0;
-  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]))) >= KorektorSravnenia) {
+ while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     SzhadieDo();
     i = i++;
     if (i > 749) i = 720;
   }
+  }
   i = 750;
-  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     RazhatieDo();
     i = i++;
     if (i > 1499) i = 1470;
   }
   i = 1500;
-  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     PovorotVPravoDo();
     i = i++;
     if (i > 2249) i = 2220;
   }
   i = 2250;
-  while ((((min(Srednie_2,  flash[i]) * 100) / max(Srednie_2, flash[i]))) >= KorektorSravnenia) {
+  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
     PovorotVLevoDo();
     i = i++;
     if (i > 2999) i = 2969;
@@ -249,38 +266,9 @@ void Sravnenie() {
 
 }
 
-/*   //Это всё хуйня, переделывай!
-  while (i < 2999) {
-    i = i + 1;
-    if ((i <= 750)  && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
-      SzhadieDo();
-    }
-    else {
-      goto nachalo;
-    }
-    if ((((i >= 750) && (i <= 1500))) &&  ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
-      RazhatieDo();
-    }
-    else {
-      goto nachalo;
-    }
-    if ((((i >= 1500) && (i <= 2250)))   && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
-      PovorotVLevoDo();
-    }
-    else {
-      goto nachalo;
-    }
-    if ((((i >= 2250) && (i <= 2999)))  && ((Srednie_2 >= flash[i] + korector) or (Srednie_2 <= flash[i] + korector))) {
-      PovorotVPravoDo();
-    }
-    else {
-      goto nachalo;
-    }
-  }
-*/
-
 void SearchSzhatie() {
   i = 0;
+  x = 0;
   lcd.clear();
   lcd.setCursor(1, 0);
   lcd.print("Szhozmite hand");
@@ -288,13 +276,17 @@ void SearchSzhatie() {
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
-  while (i < 750) {
+  while ((i < 750) && (SignalSDatchika >= korector)) {
+    SearchSzhatie:
     delay(2);
     chistka();
     logika();
     delay(3);
     VEEPROM();
     i = i + 1;
+    SummaDo1[x] = Srednie_1;
+    if (x >= 10) goto SearchSzhatie; //Счётчик до 10
+    x = x++
   }
   lcd.clear();
   lcd.home();
@@ -302,6 +294,7 @@ void SearchSzhatie() {
 }
 
 void SearchRazhatie() {
+
   i = 750;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -310,13 +303,13 @@ void SearchRazhatie() {
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
-  while (i < 1500) {
-    i = i + 1;
+  while ((i < 1500) && (SignalSDatchika >= korector)) {
     delay(2);
     chistka();
     logika();
     delay(3);
     VEEPROM();
+    i = i + 1;
   }
   lcd.clear();
   lcd.home();
@@ -324,6 +317,7 @@ void SearchRazhatie() {
 }
 
 void SearchPovorotVLevo() {
+
   i = 1500;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -334,13 +328,13 @@ void SearchPovorotVLevo() {
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
-  while (i < 2250) {
-    i = i + 1;
+  while ((i < 2250) && (SignalSDatchika >= korector)) {
     delay(2);
     chistka();
     logika();
     delay(3);
     VEEPROM();
+    i = i + 1;
   }
   lcd.clear();
   lcd.home();
@@ -348,6 +342,7 @@ void SearchPovorotVLevo() {
 }
 
 void SearchPovorotVPravo() {
+
   i = 2250;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -358,13 +353,13 @@ void SearchPovorotVPravo() {
   Pisk();
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
-  while (i < 3000) {
-    i = i + 1;
+  while ((i < 3000) && (SignalSDatchika >= korector)) {
     delay(2);
     chistka();
     logika();
     delay(3);
     VEEPROM();
+    i = i + 1;
   }
   lcd.clear();
   lcd.home();
@@ -372,10 +367,13 @@ void SearchPovorotVPravo() {
 }
 
 void VEEPROM() {
-  EEPROM.update(i, Srednie_2);
+
+  EEPROM.update(i, Srednie_1);
+
 }
 
 void SearchValues() {
+
   i = 0;
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -396,6 +394,7 @@ void SearchValues() {
 }
 
 void proverka() {
+
   while (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
     lcd.clear();
     lcd.home();
@@ -415,23 +414,21 @@ void chistka() {
 
   if (index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
   val_0[index] = SignalSDatchika; // записываем значение с датчика в массив
-  index = index + 1;
-
-  if (index > 2) index = 0; // переключаем индекс с 0 до 2 (0, 1, 2, 0, 1, 2…)
-  val_Srednie_1[index] = Srednie_1;
+  val_1[index] = Srednie_0;
   index = index + 1;
 
 }
 
 void logika() {
 
-
   if (SignalSDatchika >= korector) {
-    Srednie_1 = (val_0[0] + val_0[1] + val_0[2]) / 3;
+    Srednie_0 = (val_0[0] + val_0[1] + val_0[2]) / 3; //Первый этап усреднения
   }
-
-  if (val_Srednie_1[0] >= 1 || val_Srednie_1[1] >= 1 || val_Srednie_1[2] >= 1) {
-    Srednie_2 = (val_Srednie_1[0] + val_Srednie_1[1] + val_Srednie_1[2]) / 3;
+  if (val_1[0] >= 1 && val_1[1] >= 1 && val_1[2] >= 1) {
+    Srednie_1 = (val_1[0] + val_1[1] + val_1[2]) / 3; //Второй этап усреднения
   }
-  Srednie_2 = map(Srednie_2, 0, 900, 0, 255);
+  Srednie_1 = map(Srednie_1, 0, 900, 0, 255);
+  if (x > 9) x = 0;
+  Summa1[x] = Srednie_1;
+  x = x++;
 }
