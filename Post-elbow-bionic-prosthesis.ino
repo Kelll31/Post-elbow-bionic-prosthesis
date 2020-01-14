@@ -1,5 +1,3 @@
-#include <Adafruit_GFX.h>
-#include <gfxfont.h>
 #include <Servo.h> // Подключаем библиотеку
 #include <microWire.h> // Подключаем библиотеку
 #include <microLiquidCrystal_I2C.h> // Подключаем библиотеку
@@ -290,7 +288,7 @@ void SearchSzhatie() {
     i = i + 1;
     SummaDo1[x] = Srednie_1;
     if (x >= 10) goto SearchSzhatie; //Счётчик до 10
-    x = x++
+    x = x++;
   }
   lcd.clear();
   lcd.home();

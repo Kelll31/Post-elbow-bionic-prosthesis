@@ -1,68 +1,68 @@
 {
   "files" : [ {
-    "remoteURL" : "https://downloads.arduino.cc/libraries/library_index.json.gz",
-    "localPath" : "C:\\Users\\user\\Desktop\\Проект BionicHand\\OsnovaV5_Optimization\\data\\cache\\downloads.arduino.cc\\libraries\\library_index.json.gz",
-    "eTag" : "8a79d1659c8d7499acb2b58bdb48b3a2",
-    "md5" : "MD5:8a79d1659c8d7499acb2b58bdb48b3a2",
-    "createdAt" : "2020-01-13T18:21:44.72",
-    "cacheControl" : {
-      "maxAge" : 14400,
-      "mustRevalidate" : false,
-      "noCache" : false,
-      "noStore" : false
-    },
-    "expires" : "2020-01-13T22:21:44.720"
-  }, {
     "remoteURL" : "https://alexgyver.github.io/package_GyverCore_index.json",
-    "localPath" : "C:\\Users\\user\\Desktop\\Проект BionicHand\\OsnovaV5_Optimization\\data\\cache\\alexgyver.github.io\\package_GyverCore_index.json",
+    "localPath" : "C:\\Users\\user\\Desktop\\Post-elbow-bionic-prosthesis\\data\\cache\\alexgyver.github.io\\package_GyverCore_index.json",
     "eTag" : "5dc7e735-2ab0",
     "md5" : "MD5:fada7b22ce31efa03df6d27c538a39c2",
-    "createdAt" : "2020-01-13T18:21:43.277",
+    "createdAt" : "2020-01-14T16:49:39.16",
     "cacheControl" : {
       "maxAge" : 600,
       "mustRevalidate" : false,
       "noCache" : false,
       "noStore" : false
     },
-    "expires" : "2020-01-13T18:31:43.277"
+    "expires" : "2020-01-14T16:59:39.160"
   }, {
-    "remoteURL" : "https://downloads.arduino.cc/libraries/library_index.json.sig",
-    "localPath" : "C:\\Users\\user\\Desktop\\Проект BionicHand\\OsnovaV5_Optimization\\data\\cache\\downloads.arduino.cc\\libraries\\library_index.json.sig",
-    "eTag" : "4b67630c4d534305b793b131454878c6",
-    "md5" : "MD5:4b67630c4d534305b793b131454878c6",
-    "createdAt" : "2020-01-13T18:21:44.929",
+    "remoteURL" : "https://downloads.arduino.cc/libraries/library_index.json.gz",
+    "localPath" : "C:\\Users\\user\\Desktop\\Post-elbow-bionic-prosthesis\\data\\cache\\downloads.arduino.cc\\libraries\\library_index.json.gz",
+    "eTag" : "396ba666f647f286f28bb02811447884",
+    "md5" : "MD5:396ba666f647f286f28bb02811447884",
+    "createdAt" : "2020-01-14T16:49:41.768",
     "cacheControl" : {
       "maxAge" : 14400,
       "mustRevalidate" : false,
       "noCache" : false,
       "noStore" : false
     },
-    "expires" : "2020-01-13T22:21:44.929"
+    "expires" : "2020-01-14T20:49:41.768"
   }, {
     "remoteURL" : "https://downloads.arduino.cc/packages/package_index.json.sig",
-    "localPath" : "C:\\Users\\user\\Desktop\\Проект BionicHand\\OsnovaV5_Optimization\\data\\cache\\downloads.arduino.cc\\packages\\package_index.json.sig",
+    "localPath" : "C:\\Users\\user\\Desktop\\Post-elbow-bionic-prosthesis\\data\\cache\\downloads.arduino.cc\\packages\\package_index.json.sig",
     "eTag" : "feb2be1057e9028e175c28edef4b66c0",
     "md5" : "MD5:feb2be1057e9028e175c28edef4b66c0",
-    "createdAt" : "2020-01-13T18:21:43.753",
+    "createdAt" : "2020-01-14T16:49:40.838",
     "cacheControl" : {
       "maxAge" : 3600,
       "mustRevalidate" : false,
       "noCache" : false,
       "noStore" : false
     },
-    "expires" : "2020-01-13T19:21:43.753"
+    "expires" : "2020-01-14T17:49:40.838"
+  }, {
+    "remoteURL" : "https://downloads.arduino.cc/libraries/library_index.json.sig",
+    "localPath" : "C:\\Users\\user\\Desktop\\Post-elbow-bionic-prosthesis\\data\\cache\\downloads.arduino.cc\\libraries\\library_index.json.sig",
+    "eTag" : "ada2254b5ac75db4e944b347e2de0004",
+    "md5" : "MD5:ada2254b5ac75db4e944b347e2de0004",
+    "createdAt" : "2020-01-14T16:49:41.959",
+    "cacheControl" : {
+      "maxAge" : 14400,
+      "mustRevalidate" : false,
+      "noCache" : false,
+      "noStore" : false
+    },
+    "expires" : "2020-01-14T20:49:41.959"
   }, {
     "remoteURL" : "https://downloads.arduino.cc/packages/package_index.json",
-    "localPath" : "C:\\Users\\user\\Desktop\\Проект BionicHand\\OsnovaV5_Optimization\\data\\cache\\downloads.arduino.cc\\packages\\package_index.json",
+    "localPath" : "C:\\Users\\user\\Desktop\\Post-elbow-bionic-prosthesis\\data\\cache\\downloads.arduino.cc\\packages\\package_index.json",
     "eTag" : "73baa021173bb69af7582a0257fc13f3",
     "md5" : "MD5:73baa021173bb69af7582a0257fc13f3",
-    "createdAt" : "2020-01-13T18:21:43.628",
+    "createdAt" : "2020-01-14T16:49:40.691",
     "cacheControl" : {
       "maxAge" : 3600,
       "mustRevalidate" : false,
       "noCache" : false,
       "noStore" : false
     },
-    "expires" : "2020-01-13T19:21:43.628"
+    "expires" : "2020-01-14T17:49:40.691"
   } ]
 }
