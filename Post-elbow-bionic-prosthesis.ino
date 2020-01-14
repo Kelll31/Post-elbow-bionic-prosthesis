@@ -40,11 +40,11 @@ int val_1[3]; // Среднее арифметические 2 (Массив)
 int Srednie_0; // Среднее арифметические 1 (Целое единственное число)
 int Srednie_1; // Среднее арифметические 2 (Целое единственное число)
 int Summa1[10]; //Сумма для работы с датчиком
-int SummaDo1[10]; //Сумма для работы с памятью (действие 1)
-int SummaDo2[10]; //Сумма для работы с памятью (действие 2)
-int SummaDo3[10]; //Сумма для работы с памятью (действие 3)
-int SummaDo4[10]; //Сумма для работы с памятью (действие 4)
-int ServoMemory[10];
+int SummaDo1; //Сумма для работы с памятью (действие 1)
+int SummaDo2; //Сумма для работы с памятью (действие 2)
+int SummaDo3; //Сумма для работы с памятью (действие 3)
+int SummaDo4; //Сумма для работы с памятью (действие 4)
+int ServoMemory[20];
 byte  flash[3000]; //Значения во flash
 byte KorektorSravnenia;
 
@@ -84,30 +84,31 @@ void setup() {
     lcd.clear();
     lcd.setCursor(1, 0);
     lcd.print("First Launch");
+    digitalWrite(AllServo, LOW);
     delay(3000);
-    SearchSzhatie();
+    TuningServo1();
     Pisk();
     delay(3000);
-    SearchRazhatie();
+    TuningServo2();
     Pisk();
     delay(3000);
-    SearchPovorotVLevo();
+    TuningServo3();
     Pisk();
     delay(3000);
-    SearchPovorotVPravo();
+    TuningServo4();
     lcd.clear();
     lcd.setCursor(1, 0);
     lcd.print("First Launch");
     lcd.setCursor(8, 1);
     lcd.print("Ok");
     Pisk();
-    NastroikaServo();
-    Pisk();
+    digitalWrite(AllServo, HIGH);
     delay(3000);
   }
   SearchValues();
   digitalWrite(AllServo, HIGH);
   delay(1000);
+
 }
 
 void loop() {
@@ -115,7 +116,7 @@ void loop() {
   if (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
     proverka();
   }
-  Sravnenie();
+  Logic();
 
 }
 
@@ -125,107 +126,43 @@ void Pisk() {
   delay(250);
   digitalWrite(Pishalka, LOW);
   delay(250);
+
 }
 
-void SzhadieDo() {
+void ServoDo1() {
 
   mizinec.write(ServoMemory[1]);
   bezimani.write(ServoMemory[3]);
   fuck.write(ServoMemory[5]);
   ukozatel.write(ServoMemory[7]);
   big.write(ServoMemory[9]);
+
 }
 
-void RazhatieDo() {
+void ServoDo2() {
 
   mizinec.write(ServoMemory[0]);
   bezimani.write(ServoMemory[2]);
   fuck.write(ServoMemory[4]);
   ukozatel.write(ServoMemory[6]);
   big.write(ServoMemory[8]);
+
 }
 
-void PovorotVLevoDo() {
+void ServoDo3() {
 
   //Здесь должен быть код
 
 
 }
 
-void PovorotVPravoDo() {
+void ServoDo4() {
 
   //Здесь должен быть код
 
 }
 
-void NastroikaServo() {
-
-  digitalWrite(AllServo, LOW);
-  Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
-  lcd.setCursor(0, 1);
-  lcd.print("Minimal");
-  Pisk();
-  while (KeyA < 1) {
-    ServoMemory[0] = analogRead(potmizinec);
-    ServoMemory[0] = map(ServoMemory[0], 0, 1024 , 0, 255);
-    ServoMemory[2] = analogRead(potbezimani);
-    ServoMemory[2] = map(ServoMemory[2], 0, 1024 , 0, 255);
-    ServoMemory[4] = analogRead(potfuck);
-    ServoMemory[4] = map(ServoMemory[4], 0, 1024 , 0, 255);
-    ServoMemory[6] = analogRead(potukozatel);
-    ServoMemory[6] = map(ServoMemory[6], 0, 1024 , 0, 255);
-    ServoMemory[8] = analogRead(potbig);
-    ServoMemory[8] = map(ServoMemory[8], 0, 1024 , 0, 255);
-    EEPROM.update(3000, ServoMemory[0]);
-    EEPROM.update(3002, ServoMemory[2]);
-    EEPROM.update(3004, ServoMemory[3]);
-    EEPROM.update(3006, ServoMemory[4]);
-    EEPROM.update(3008, ServoMemory[5]);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
-    delay(3);
-  }
-  Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
-  lcd.setCursor(0, 1);
-  lcd.print("Maximal");
-  delay(1000);
-  Pisk();
-  while (KeyA < 1) {
-    ServoMemory[1] = analogRead(potmizinec);
-    ServoMemory[1] = map(ServoMemory[1], 0, 1024 , 0, 255);
-    ServoMemory[3] = analogRead(potbezimani);
-    ServoMemory[3] = map(ServoMemory[3], 0, 1024 , 0, 255);
-    ServoMemory[5] = analogRead(potfuck);
-    ServoMemory[5] = map(ServoMemory[5], 0, 1024 , 0, 255);
-    ServoMemory[7] = analogRead(potukozatel);
-    ServoMemory[7] = map(ServoMemory[7], 0, 1024 , 0, 255);
-    ServoMemory[9] = analogRead(potbig);
-    ServoMemory[9] = map(ServoMemory[9], 0, 1024 , 0, 255);
-    EEPROM.update(3001, ServoMemory[1]);
-    EEPROM.update(3003, ServoMemory[3]);
-    EEPROM.update(3005, ServoMemory[5]);
-    EEPROM.update(3007, ServoMemory[7]);
-    EEPROM.update(3009, ServoMemory[9]);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
-    delay(3);
-  }
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
-  lcd.setCursor(0, 1);
-  lcd.print("Ok");
-  Pisk();
-  delay(1000);
-}
-
-void Sravnenie() {
+void Logic() {
 
   lcd.clear();
   lcd.home();
@@ -234,41 +171,43 @@ void Sravnenie() {
   lcd.print(Srednie_1);
   delay(3);
   chistka();
-  logika();
+  Usrednenie();
   i = 0;
-  
-  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo1[0] + SummaDo1[1] + SummaDo1[2] + SummaDo1[3] + SummaDo1[4] + SummaDo1[5] + SummaDo1[6] + SummaDo1[7] + SummaDo1[8] + SummaDo1[9]))) >= KorektorSravnenia) {
- while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
-    SzhadieDo();
-    i = i++;
-    if (i > 749) i = 720;
-  }
+  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo1) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo1))) >= KorektorSravnenia) {
+    while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      ServoDo1();
+      i = i++;
+      if (i > 749) i = 720;
+    }
   }
   i = 750;
-  
-  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
-    RazhatieDo();
-    i = i++;
-    if (i > 1499) i = 1470;
+  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo2) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo2))) >= KorektorSravnenia) {
+    while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      ServoDo2();
+      i = i++;
+      if (i > 1499) i = 1470;
+    }
   }
   i = 1500;
-  
-  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
-    PovorotVPravoDo();
-    i = i++;
-    if (i > 2249) i = 2220;
+  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo3) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo3))) >= KorektorSravnenia) {
+    while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      ServoDo4();
+      i = i++;
+      if (i > 2249) i = 2220;
+    }
   }
   i = 2250;
-  
-  while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
-    PovorotVLevoDo();
-    i = i++;
-    if (i > 2999) i = 2969;
+  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo4) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo4))) >= KorektorSravnenia) {
+    while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      ServoDo3();
+      i = i++;
+      if (i > 2999) i = 2969;
+    }
   }
 
 }
 
-void SearchSzhatie() {
+void TuningServo1() {
   i = 0;
   x = 0;
   lcd.clear();
@@ -279,24 +218,53 @@ void SearchSzhatie() {
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while ((i < 750) && (SignalSDatchika >= korector)) {
-    SearchSzhatie:
+TuningServo1:
     delay(2);
     chistka();
-    logika();
+    Usrednenie();
     delay(3);
-    VEEPROM();
+    EEPROM.update(i, Srednie_1);
     i = i + 1;
-    SummaDo1[x] = Srednie_1;
-    if (x >= 10) goto SearchSzhatie; //Счётчик до 10
+    SummaDo1 = SummaDo1 + Srednie_1;
+    if (x >= 10) goto TuningServo1; //Счётчик до 10
     x = x++;
   }
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  delay(1500);
+  Pisk();
+  while (KeyA < 1) {
+    //Задаём сервухам положение руками
+    ServoMemory[0] = analogRead(potmizinec);
+    ServoMemory[0] = map(ServoMemory[0], 0, 1024 , 0, 255);
+    ServoMemory[1] = analogRead(potbezimani);
+    ServoMemory[1] = map(ServoMemory[2], 0, 1024 , 0, 255);
+    ServoMemory[2] = analogRead(potfuck);
+    ServoMemory[2] = map(ServoMemory[4], 0, 1024 , 0, 255);
+    ServoMemory[3] = analogRead(potukozatel);
+    ServoMemory[3] = map(ServoMemory[6], 0, 1024 , 0, 255);
+    ServoMemory[4] = analogRead(potbig);
+    ServoMemory[4] = map(ServoMemory[8], 0, 1024 , 0, 255);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  //Кидаем значения сервоприводов в EEPROM
+  EEPROM.update(3000, ServoMemory[0]);
+  EEPROM.update(3001, ServoMemory[1]);
+  EEPROM.update(3002, ServoMemory[2]);
+  EEPROM.update(3003, ServoMemory[3]);
+  EEPROM.update(3004, ServoMemory[4]);
   lcd.clear();
   lcd.home();
   lcd.print("Szhatie = Ok");
+
 }
 
-void SearchRazhatie() {
-
+void TuningServo2() {
+  x = 0;
   i = 750;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -306,20 +274,53 @@ void SearchRazhatie() {
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while ((i < 1500) && (SignalSDatchika >= korector)) {
+TuningServo2:
     delay(2);
     chistka();
-    logika();
+    Usrednenie();
     delay(3);
-    VEEPROM();
+    EEPROM.update(i, Srednie_1);
     i = i + 1;
+    SummaDo2 = SummaDo2 + Srednie_1;
+    if (x >= 10) goto TuningServo2; //Счётчик до 10
+    x = x++;
   }
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  delay(1500);
+  Pisk();
+  while (KeyA < 1) {
+    //Задаём сервухам положение руками
+    ServoMemory[5] = analogRead(potmizinec);
+    ServoMemory[5] = map(ServoMemory[5], 0, 1024 , 0, 255);
+    ServoMemory[6] = analogRead(potbezimani);
+    ServoMemory[6] = map(ServoMemory[6], 0, 1024 , 0, 255);
+    ServoMemory[7] = analogRead(potfuck);
+    ServoMemory[7] = map(ServoMemory[7], 0, 1024 , 0, 255);
+    ServoMemory[8] = analogRead(potukozatel);
+    ServoMemory[8] = map(ServoMemory[8], 0, 1024 , 0, 255);
+    ServoMemory[9] = analogRead(potbig);
+    ServoMemory[9] = map(ServoMemory[9], 0, 1024 , 0, 255);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  //Кидаем значения сервоприводов в EEPROM
+  EEPROM.update(3005, ServoMemory[5]);
+  EEPROM.update(3006, ServoMemory[6]);
+  EEPROM.update(3007, ServoMemory[7]);
+  EEPROM.update(3008, ServoMemory[8]);
+  EEPROM.update(3009, ServoMemory[9]);
   lcd.clear();
   lcd.home();
   lcd.print("Razhatie = Ok");
+
 }
 
-void SearchPovorotVLevo() {
-
+void TuningServo3() {
+  x = 0;
   i = 1500;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -331,20 +332,54 @@ void SearchPovorotVLevo() {
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while ((i < 2250) && (SignalSDatchika >= korector)) {
+TuningServo3:
     delay(2);
     chistka();
-    logika();
+    Usrednenie();
     delay(3);
-    VEEPROM();
+    EEPROM.update(i, Srednie_1);
     i = i + 1;
+    SummaDo3 = SummaDo3 + Srednie_1;
+    if (x >= 10) goto TuningServo3; //Счётчик до 10
+    x = x++;
   }
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  delay(1500);
+  Pisk();
+  while (KeyA < 1) {
+    //Задаём сервухам положение руками
+    ServoMemory[10] = analogRead(potmizinec);
+    ServoMemory[10] = map(ServoMemory[10], 0, 1024 , 0, 255);
+    ServoMemory[11] = analogRead(potbezimani);
+    ServoMemory[11] = map(ServoMemory[11], 0, 1024 , 0, 255);
+    ServoMemory[12] = analogRead(potfuck);
+    ServoMemory[12] = map(ServoMemory[12], 0, 1024 , 0, 255);
+    ServoMemory[13] = analogRead(potukozatel);
+    ServoMemory[13] = map(ServoMemory[13], 0, 1024 , 0, 255);
+    ServoMemory[14] = analogRead(potbig);
+    ServoMemory[14] = map(ServoMemory[14], 0, 1024 , 0, 255);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  //Кидаем значения сервоприводов в EEPROM
+  EEPROM.update(3010, ServoMemory[10]);
+  EEPROM.update(3011, ServoMemory[11]);
+  EEPROM.update(3012, ServoMemory[12]);
+  EEPROM.update(3013, ServoMemory[13]);
+  EEPROM.update(3014, ServoMemory[14]);
   lcd.clear();
   lcd.home();
   lcd.print("Povorot V Levo = Ok");
+
 }
 
-void SearchPovorotVPravo() {
+void TuningServo4() {
 
+  x = 0;
   i = 2250;
   lcd.clear();
   lcd.setCursor(1, 0);
@@ -356,21 +391,48 @@ void SearchPovorotVPravo() {
   lcd.setCursor(1, 2);
   lcd.print("Write to memory...");
   while ((i < 3000) && (SignalSDatchika >= korector)) {
+TuningServo4:
     delay(2);
     chistka();
-    logika();
+    Usrednenie();
     delay(3);
-    VEEPROM();
+    EEPROM.update(i, Srednie_1);
     i = i + 1;
+    SummaDo4 = SummaDo4 + Srednie_1;
+    if (x >= 10) goto TuningServo4; //Счётчик до 10
+    x = x++;
   }
+  Pisk();
+  lcd.clear();
+  lcd.home();
+  lcd.print("Zadaite znachenie Fingers");
+  delay(1500);
+  Pisk();
+  while (KeyA < 1) {
+    //Задаём сервухам положение руками
+    ServoMemory[15] = analogRead(potmizinec);
+    ServoMemory[15] = map(ServoMemory[15], 0, 1024 , 0, 255);
+    ServoMemory[16] = analogRead(potbezimani);
+    ServoMemory[16] = map(ServoMemory[16], 0, 1024 , 0, 255);
+    ServoMemory[17] = analogRead(potfuck);
+    ServoMemory[17] = map(ServoMemory[17], 0, 1024 , 0, 255);
+    ServoMemory[18] = analogRead(potukozatel);
+    ServoMemory[18] = map(ServoMemory[18], 0, 1024 , 0, 255);
+    ServoMemory[19] = analogRead(potbig);
+    ServoMemory[19] = map(ServoMemory[19], 0, 1024 , 0, 255);
+    lcd.setCursor(0, 2);
+    lcd.print("Ok?");
+    delay(3);
+  }
+  //Кидаем значения сервоприводов в EEPROM
+  EEPROM.update(3015, ServoMemory[15]);
+  EEPROM.update(3016, ServoMemory[16]);
+  EEPROM.update(3017, ServoMemory[17]);
+  EEPROM.update(3018, ServoMemory[18]);
+  EEPROM.update(3019, ServoMemory[19]);
   lcd.clear();
   lcd.home();
   lcd.print("Povorot V Pravo = Ok");
-}
-
-void VEEPROM() {
-
-  EEPROM.update(i, Srednie_1);
 
 }
 
@@ -393,6 +455,7 @@ void SearchValues() {
   Pisk();
   delay(250);
   Pisk();
+
 }
 
 void proverka() {
@@ -408,6 +471,7 @@ void proverka() {
   lcd.home();
   lcd.print("Electrodes found!");
   delay(3000);
+
 }
 
 void chistka() {
@@ -421,7 +485,7 @@ void chistka() {
 
 }
 
-void logika() {
+void Usrednenie() {
 
   if (SignalSDatchika >= korector) {
     Srednie_0 = (val_0[0] + val_0[1] + val_0[2]) / 3; //Первый этап усреднения
