@@ -1,13 +1,16 @@
 #include <Servo.h> // Подключаем библиотеку
-#include <microWire.h> // Подключаем библиотеку
-#include <microLiquidCrystal_I2C.h> // Подключаем библиотеку
+#include <Wire.h> // Подключаем библиотеку
 #include <EEPROM.h> // Подключаем библиотеку
+#include <SPI.h> // Подключаем библиотеку
+#include <Adafruit_GFX.h> // Подключаем библиотеку
+#include <Adafruit_SSD1306.h> // Подключаем библиотеку
+#include "FreeMono7.h" // Русский шрифт
 
 #define korector 12 // Задаем корректор чистки
 #define ElectrodeR 10
 #define ElectrodeL 11
 #define Pishalka 12
-#define AllServo 5
+#define AllServo 1
 #define TranzistorsA 2
 #define TranzistorsB 3
 #define TranzistorsC 4
@@ -28,11 +31,17 @@ Servo big;
 Servo ladon;
 Servo povorot;
 
-LiquidCrystal_I2C lcd(0x3F, 20, 4); // Задаем адрес Lcd монитора
+#define OLED_MOSI   9
+#define OLED_CLK   6
+#define OLED_DC    5
+#define OLED_CS    20
+#define OLED_RESET 13
+Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS); // Задаем адрес Oled монитора
 
 int SignalSDatchika; // Аналоговый сигнал с датчика
 int i; // Сдвиговый регистр
 byte x; //Сдвиговый регистр для Датчика
+byte y; //Сдвиговый регистр для транзисторов
 
 byte index; // Индекс для очистки
 int val_0[3]; // Первый этап очистки (Масcив)
@@ -52,7 +61,7 @@ byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B1010
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
 void setup() {
-
+  y = 0;
   i = 0;
   x = 0;
   pinMode(KeyA, INPUT);
@@ -69,21 +78,21 @@ void setup() {
   povorot.attach(38);
   KorektorSravnenia = 93; //Основной корректор сравнения для логики
 
-  lcd.init();  // Инициализируем Lcd
-  lcd.init();  // Инициализируем Lcd X2
-  lcd.backlight();
-  lcd.setCursor(0, 1);
-  lcd.print("Kelll31 Technology");
-  lcd.createChar(0, levo8bit);
-  lcd.createChar(1, pravo8bit);
-  lcd.setCursor(18, 1);
-  lcd.write(0);
-  lcd.write(1);
+  display.begin(SSD1306_SWITCHCAPVCC);  // Инициализируем Oled
+  display.setTextSize(1);
+  display.setTextColor(WHITE);
+  display.setFont(&FreeMono7pt8b);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Kelll31");
+  display.println("Technology");
+  display.display();
   delay(3000);
   if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB) == 1))  {
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print("First Launch");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Первый запуск!");
+    display.display();
     digitalWrite(AllServo, LOW);
     delay(3000);
     TuningServo1();
@@ -96,11 +105,12 @@ void setup() {
     Pisk();
     delay(3000);
     TuningServo4();
-    lcd.clear();
-    lcd.setCursor(1, 0);
-    lcd.print("First Launch");
-    lcd.setCursor(8, 1);
-    lcd.print("Ok");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Первый запуск!");
+    display.setCursor(10, 25);
+    display.println("Выполнено");
+    display.display();
     Pisk();
     digitalWrite(AllServo, HIGH);
     delay(3000);
@@ -164,11 +174,14 @@ void ServoDo4() {
 
 void Logic() {
 
-  lcd.clear();
-  lcd.home();
-  lcd.print("Normal mode");
-  lcd.setCursor(0, 1);
-  lcd.print(Srednie_1);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Нормальный");
+  display.setCursor(10, 25);
+  display.println("режим");
+  display.setCursor(10, 40);
+  display.println(Srednie_1);
+  display.display();
   delay(3);
   chistka();
   Usrednenie();
@@ -210,16 +223,33 @@ void Logic() {
 void TuningServo1() {
   i = 0;
   x = 0;
-  lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print("Szhozmite hand");
-  delay(3000);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Задайте");
+  display.setCursor(10, 25);
+  display.println("действие 1");
+  display.display();
+  delay(2000);
   Pisk();
-  lcd.setCursor(1, 2);
-  lcd.print("Write to memory...");
   while ((i < 750) && (SignalSDatchika >= korector)) {
 TuningServo1:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память...");
+    display.display();
     delay(2);
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память..");
+    display.display();
     chistka();
     Usrednenie();
     delay(3);
@@ -230,9 +260,16 @@ TuningServo1:
     x = x++;
   }
   Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Установите");
+  display.setCursor(10, 25);
+  display.println("пальцы в ");
+  display.setCursor(10, 40);
+  display.println("необходимое");
+  display.setCursor(10, 55);
+  display.println("положение");
+  display.display();
   delay(1500);
   Pisk();
   while (KeyA < 1) {
@@ -247,8 +284,16 @@ TuningServo1:
     ServoMemory[3] = map(ServoMemory[6], 0, 1024 , 0, 255);
     ServoMemory[4] = analogRead(potbig);
     ServoMemory[4] = map(ServoMemory[8], 0, 1024 , 0, 255);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("После");
+    display.setCursor(10, 25);
+    display.println("завершения");
+    display.setCursor(10, 40);
+    display.println("нажмите");
+    display.setCursor(10, 55);
+    display.println("кнопку А");
+    display.display();
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -257,25 +302,43 @@ TuningServo1:
   EEPROM.update(3002, ServoMemory[2]);
   EEPROM.update(3003, ServoMemory[3]);
   EEPROM.update(3004, ServoMemory[4]);
-  lcd.clear();
-  lcd.home();
-  lcd.print("Szhatie = Ok");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Действие 1=Ок!");
+  display.display();
 
 }
 
 void TuningServo2() {
   x = 0;
   i = 750;
-  lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print("Razoshmite hand");
-  delay(3000);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Задайте");
+  display.setCursor(10, 25);
+  display.println("действие 2");
+  display.display();
+  delay(2000);
   Pisk();
-  lcd.setCursor(1, 2);
-  lcd.print("Write to memory...");
   while ((i < 1500) && (SignalSDatchika >= korector)) {
 TuningServo2:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память...");
+    display.display();
     delay(2);
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память..");
+    display.display();
     chistka();
     Usrednenie();
     delay(3);
@@ -286,9 +349,16 @@ TuningServo2:
     x = x++;
   }
   Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Установите");
+  display.setCursor(10, 25);
+  display.println("пальцы в ");
+  display.setCursor(10, 40);
+  display.println("необходимое");
+  display.setCursor(10, 55);
+  display.println("положение");
+  display.display();
   delay(1500);
   Pisk();
   while (KeyA < 1) {
@@ -303,8 +373,16 @@ TuningServo2:
     ServoMemory[8] = map(ServoMemory[8], 0, 1024 , 0, 255);
     ServoMemory[9] = analogRead(potbig);
     ServoMemory[9] = map(ServoMemory[9], 0, 1024 , 0, 255);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("После");
+    display.setCursor(10, 25);
+    display.println("завершения");
+    display.setCursor(10, 40);
+    display.println("нажмите");
+    display.setCursor(10, 55);
+    display.println("кнопку А");
+    display.display();
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -313,27 +391,43 @@ TuningServo2:
   EEPROM.update(3007, ServoMemory[7]);
   EEPROM.update(3008, ServoMemory[8]);
   EEPROM.update(3009, ServoMemory[9]);
-  lcd.clear();
-  lcd.home();
-  lcd.print("Razhatie = Ok");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Действие 2=Ок!");
+  display.display();
 
 }
 
 void TuningServo3() {
   x = 0;
   i = 1500;
-  lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print("Povernite hand");
-  lcd.setCursor(3, 1);
-  lcd.print("V Levo");
-  delay(3000);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Задайте");
+  display.setCursor(10, 25);
+  display.println("действие 3");
+  display.display();
+  delay(2000);
   Pisk();
-  lcd.setCursor(1, 2);
-  lcd.print("Write to memory...");
   while ((i < 2250) && (SignalSDatchika >= korector)) {
 TuningServo3:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память...");
+    display.display();
     delay(2);
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память..");
+    display.display();
     chistka();
     Usrednenie();
     delay(3);
@@ -344,9 +438,16 @@ TuningServo3:
     x = x++;
   }
   Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Установите");
+  display.setCursor(10, 25);
+  display.println("пальцы в ");
+  display.setCursor(10, 40);
+  display.println("необходимое");
+  display.setCursor(10, 55);
+  display.println("положение");
+  display.display();
   delay(1500);
   Pisk();
   while (KeyA < 1) {
@@ -361,8 +462,16 @@ TuningServo3:
     ServoMemory[13] = map(ServoMemory[13], 0, 1024 , 0, 255);
     ServoMemory[14] = analogRead(potbig);
     ServoMemory[14] = map(ServoMemory[14], 0, 1024 , 0, 255);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("После");
+    display.setCursor(10, 25);
+    display.println("завершения");
+    display.setCursor(10, 40);
+    display.println("нажмите");
+    display.setCursor(10, 55);
+    display.println("кнопку А");
+    display.display();
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -371,9 +480,10 @@ TuningServo3:
   EEPROM.update(3012, ServoMemory[12]);
   EEPROM.update(3013, ServoMemory[13]);
   EEPROM.update(3014, ServoMemory[14]);
-  lcd.clear();
-  lcd.home();
-  lcd.print("Povorot V Levo = Ok");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Действие 3=Ок!");
+  display.display();
 
 }
 
@@ -381,18 +491,33 @@ void TuningServo4() {
 
   x = 0;
   i = 2250;
-  lcd.clear();
-  lcd.setCursor(1, 0);
-  lcd.print("Povernite hand");
-  lcd.setCursor(3, 1);
-  lcd.print("V Pravo");
-  delay(3000);
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Задайте");
+  display.setCursor(10, 25);
+  display.println("действие 4");
+  display.display();
+  delay(2000);
   Pisk();
-  lcd.setCursor(1, 2);
-  lcd.print("Write to memory...");
   while ((i < 3000) && (SignalSDatchika >= korector)) {
 TuningServo4:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память...");
+    display.display();
     delay(2);
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Записываем");
+    display.setCursor(10, 25);
+    display.println("данные в");
+    display.setCursor(10, 40);
+    display.println("память..");
+    display.display();
     chistka();
     Usrednenie();
     delay(3);
@@ -403,9 +528,16 @@ TuningServo4:
     x = x++;
   }
   Pisk();
-  lcd.clear();
-  lcd.home();
-  lcd.print("Zadaite znachenie Fingers");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Установите");
+  display.setCursor(10, 25);
+  display.println("пальцы в ");
+  display.setCursor(10, 40);
+  display.println("необходимое");
+  display.setCursor(10, 55);
+  display.println("положение");
+  display.display();
   delay(1500);
   Pisk();
   while (KeyA < 1) {
@@ -420,8 +552,16 @@ TuningServo4:
     ServoMemory[18] = map(ServoMemory[18], 0, 1024 , 0, 255);
     ServoMemory[19] = analogRead(potbig);
     ServoMemory[19] = map(ServoMemory[19], 0, 1024 , 0, 255);
-    lcd.setCursor(0, 2);
-    lcd.print("Ok?");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("После");
+    display.setCursor(10, 25);
+    display.println("завершения");
+    display.setCursor(10, 40);
+    display.println("нажмите");
+    display.setCursor(10, 55);
+    display.println("кнопку А");
+    display.display();
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -430,28 +570,42 @@ TuningServo4:
   EEPROM.update(3017, ServoMemory[17]);
   EEPROM.update(3018, ServoMemory[18]);
   EEPROM.update(3019, ServoMemory[19]);
-  lcd.clear();
-  lcd.home();
-  lcd.print("Povorot V Pravo = Ok");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Действие 4=Ок!");
+  display.display();
 
 }
 
 void SearchValues() {
 
   i = 0;
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Search values");
-  lcd.setCursor(1, 1);
-  lcd.print("in EEPROM");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Роемся в ");
+  display.setCursor(10, 25);
+  display.println("памяти...");
+  display.display();
   while (i < 2999) {
-    lcd.setCursor(0, 2);
-    lcd.print(i);
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Роемся в ");
+    display.setCursor(10, 25);
+    display.println("памяти...");
+    display.setCursor(10, 40);
+    display.println(i);
+    display.display();
     flash[i] = EEPROM.read(i);
     i = i + 1;
   }
-  lcd.setCursor(10, 2);
-  lcd.print("Ok");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Роемся в ");
+  display.setCursor(10, 25);
+  display.println("памяти.");
+  display.setCursor(10, 40);
+  display.println("Выполнено!");
+  display.display();
   Pisk();
   delay(250);
   Pisk();
@@ -461,15 +615,23 @@ void SearchValues() {
 void proverka() {
 
   while (digitalRead(ElectrodeR) == 1 || digitalRead(ElectrodeL) == 1) {
-    lcd.clear();
-    lcd.home();
-    lcd.print("No electrodes connected");
-    lcd.setCursor(0, 1);
-    lcd.print("Waiting for connection");
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Электроды не");
+    display.setCursor(10, 25);
+    display.println("обнаружены,");
+    display.setCursor(10, 40);
+    display.println("Ожидается");
+    display.setCursor(10, 55);
+    display.println("подключение!");
+    display.display();
   }
-  lcd.clear();
-  lcd.home();
-  lcd.print("Electrodes found!");
+  display.clearDisplay();
+  display.setCursor(10, 10);
+  display.println("Электроды");
+  display.setCursor(10, 25);
+  display.println("найдены!");
+  display.display();
   delay(3000);
 
 }
