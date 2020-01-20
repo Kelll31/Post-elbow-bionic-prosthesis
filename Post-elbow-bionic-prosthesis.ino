@@ -14,8 +14,8 @@
 #define TranzistorsA 2
 #define TranzistorsB 3
 #define TranzistorsC 4
-#define KeyA 8
-#define KeyB 7
+#define KeyA 7
+#define KeyB 8
 
 #define potmizinec A1
 #define potbezimani A2
@@ -31,9 +31,9 @@ Servo big;
 Servo ladon;
 Servo povorot;
 
-#define OLED_MOSI   9
+#define OLED_MOSI   2
 #define OLED_CLK   6
-#define OLED_DC    5
+#define OLED_DC    4
 #define OLED_CS    20
 #define OLED_RESET 13
 Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS); // Задаем адрес Oled монитора
@@ -56,7 +56,6 @@ int SummaDo4; //Сумма для работы с памятью (действи
 int ServoMemory[20];
 byte  flash[3000]; //Значения во flash
 byte KorektorSravnenia;
-
 byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
@@ -88,7 +87,7 @@ void setup() {
   display.println("Technology");
   display.display();
   delay(3000);
-  if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB) == 1))  {
+  if ((digitalRead(KeyA) > 0) && (digitalRead(KeyB)  > 0))  {
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Первый запуск!");
@@ -272,7 +271,7 @@ TuningServo1:
   display.display();
   delay(1500);
   Pisk();
-  while (KeyA < 1) {
+  while (1) {
     //Задаём сервухам положение руками
     ServoMemory[0] = analogRead(potmizinec);
     ServoMemory[0] = map(ServoMemory[0], 0, 1024 , 0, 255);
@@ -294,6 +293,7 @@ TuningServo1:
     display.setCursor(10, 55);
     display.println("кнопку А");
     display.display();
+    if (digitalRead(KeyA)) break;
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -361,7 +361,7 @@ TuningServo2:
   display.display();
   delay(1500);
   Pisk();
-  while (KeyA < 1) {
+  while (1) {
     //Задаём сервухам положение руками
     ServoMemory[5] = analogRead(potmizinec);
     ServoMemory[5] = map(ServoMemory[5], 0, 1024 , 0, 255);
@@ -383,6 +383,7 @@ TuningServo2:
     display.setCursor(10, 55);
     display.println("кнопку А");
     display.display();
+    if (digitalRead(KeyA)) break;
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -450,7 +451,7 @@ TuningServo3:
   display.display();
   delay(1500);
   Pisk();
-  while (KeyA < 1) {
+  while (1) {
     //Задаём сервухам положение руками
     ServoMemory[10] = analogRead(potmizinec);
     ServoMemory[10] = map(ServoMemory[10], 0, 1024 , 0, 255);
@@ -472,6 +473,7 @@ TuningServo3:
     display.setCursor(10, 55);
     display.println("кнопку А");
     display.display();
+    if (digitalRead(KeyA)) break;
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
@@ -540,7 +542,7 @@ TuningServo4:
   display.display();
   delay(1500);
   Pisk();
-  while (KeyA < 1) {
+  while (1) {
     //Задаём сервухам положение руками
     ServoMemory[15] = analogRead(potmizinec);
     ServoMemory[15] = map(ServoMemory[15], 0, 1024 , 0, 255);
@@ -562,6 +564,7 @@ TuningServo4:
     display.setCursor(10, 55);
     display.println("кнопку А");
     display.display();
+    if (digitalRead(KeyA)) break;
     delay(3);
   }
   //Кидаем значения сервоприводов в EEPROM
