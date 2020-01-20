@@ -30,7 +30,15 @@ Servo ukozatel;
 Servo big;
 Servo ladon;
 Servo povorot;
-
+//========================================================================================
+#define FASTADC 1
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit)) // Для лютого ускореня Аналогово чтения
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+//========================================================================================
 #define OLED_MOSI   2
 #define OLED_CLK   6
 #define OLED_DC    4
@@ -60,6 +68,13 @@ byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B1010
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
 void setup() {
+//========================================================================================
+#if FASTADC
+  sbi(ADCSRA, ADPS2) ;
+  cbi(ADCSRA, ADPS1) ; // Для лютого ускореня Аналогово чтения
+  cbi(ADCSRA, ADPS0) ;
+#endif
+//========================================================================================
   y = 0;
   i = 0;
   x = 0;
@@ -230,8 +245,26 @@ void TuningServo1() {
   display.display();
   delay(2000);
   Pisk();
-  while ((i < 750) && (SignalSDatchika >= korector)) {
+  while (i < 750) {
 TuningServo1:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Считываем");
+    display.setCursor(10, 25);
+    display.println("значения с");
+    display.setCursor(10, 40);
+    display.println("датчика");
+    display.display();
+    chistka();
+    Usrednenie();
+    Srednie_1 = flash[i];
+    i = i + 1;
+    SummaDo1 = SummaDo1 + Srednie_1;
+    if (x >= 10) goto TuningServo1; //Счётчик до 10
+    x = x++;
+  }
+  i = 0;
+  while (i < 750) {
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Записываем");
@@ -240,23 +273,8 @@ TuningServo1:
     display.setCursor(10, 40);
     display.println("память...");
     display.display();
-    delay(2);
-    display.clearDisplay();
-    display.setCursor(10, 10);
-    display.println("Записываем");
-    display.setCursor(10, 25);
-    display.println("данные в");
-    display.setCursor(10, 40);
-    display.println("память..");
-    display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    EEPROM.update(i, Srednie_1);
+    EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
-    SummaDo1 = SummaDo1 + Srednie_1;
-    if (x >= 10) goto TuningServo1; //Счётчик до 10
-    x = x++;
   }
   Pisk();
   display.clearDisplay();
@@ -320,8 +338,27 @@ void TuningServo2() {
   display.display();
   delay(2000);
   Pisk();
-  while ((i < 1500) && (SignalSDatchika >= korector)) {
+  while (i < 1500) {
 TuningServo2:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Считываем");
+    display.setCursor(10, 25);
+    display.println("значения с");
+    display.setCursor(10, 40);
+    display.println("датчика");
+    display.display();
+    chistka();
+    Usrednenie();
+    delay(3);
+    Srednie_1 = flash[i];
+    i = i + 1;
+    SummaDo2 = SummaDo2 + Srednie_1;
+    if (x >= 10) goto TuningServo2; //Счётчик до 10
+    x = x++;
+  }
+  i = 0;
+  while (i < 1500) {
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Записываем");
@@ -330,23 +367,8 @@ TuningServo2:
     display.setCursor(10, 40);
     display.println("память...");
     display.display();
-    delay(2);
-    display.clearDisplay();
-    display.setCursor(10, 10);
-    display.println("Записываем");
-    display.setCursor(10, 25);
-    display.println("данные в");
-    display.setCursor(10, 40);
-    display.println("память..");
-    display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    EEPROM.update(i, Srednie_1);
+    EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
-    SummaDo2 = SummaDo2 + Srednie_1;
-    if (x >= 10) goto TuningServo2; //Счётчик до 10
-    x = x++;
   }
   Pisk();
   display.clearDisplay();
@@ -410,8 +432,27 @@ void TuningServo3() {
   display.display();
   delay(2000);
   Pisk();
-  while ((i < 2250) && (SignalSDatchika >= korector)) {
+  while (i < 2250) {
 TuningServo3:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Считываем");
+    display.setCursor(10, 25);
+    display.println("значения с");
+    display.setCursor(10, 40);
+    display.println("датчика");
+    display.display();
+    chistka();
+    Usrednenie();
+    delay(3);
+    Srednie_1 = flash[i];
+    i = i + 1;
+    SummaDo3 = SummaDo3 + Srednie_1;
+    if (x >= 10) goto TuningServo3; //Счётчик до 10
+    x = x++;
+  }
+  i = 0;
+  while (i < 2250) {
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Записываем");
@@ -420,23 +461,8 @@ TuningServo3:
     display.setCursor(10, 40);
     display.println("память...");
     display.display();
-    delay(2);
-    display.clearDisplay();
-    display.setCursor(10, 10);
-    display.println("Записываем");
-    display.setCursor(10, 25);
-    display.println("данные в");
-    display.setCursor(10, 40);
-    display.println("память..");
-    display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    EEPROM.update(i, Srednie_1);
+    EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
-    SummaDo3 = SummaDo3 + Srednie_1;
-    if (x >= 10) goto TuningServo3; //Счётчик до 10
-    x = x++;
   }
   Pisk();
   display.clearDisplay();
@@ -501,8 +527,27 @@ void TuningServo4() {
   display.display();
   delay(2000);
   Pisk();
-  while ((i < 3000) && (SignalSDatchika >= korector)) {
+  while (i < 3000) {
 TuningServo4:
+    display.clearDisplay();
+    display.setCursor(10, 10);
+    display.println("Считываем");
+    display.setCursor(10, 25);
+    display.println("значения с");
+    display.setCursor(10, 40);
+    display.println("датчика");
+    display.display();
+    chistka();
+    Usrednenie();
+    delay(3);
+    Srednie_1 = flash[i];
+    i = i + 1;
+    SummaDo4 = SummaDo4 + Srednie_1;
+    if (x >= 10) goto TuningServo4; //Счётчик до 10
+    x = x++;
+  }
+  i = 0;
+  while (i < 2250) {
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Записываем");
@@ -511,23 +556,8 @@ TuningServo4:
     display.setCursor(10, 40);
     display.println("память...");
     display.display();
-    delay(2);
-    display.clearDisplay();
-    display.setCursor(10, 10);
-    display.println("Записываем");
-    display.setCursor(10, 25);
-    display.println("данные в");
-    display.setCursor(10, 40);
-    display.println("память..");
-    display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    EEPROM.update(i, Srednie_1);
+    EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
-    SummaDo4 = SummaDo4 + Srednie_1;
-    if (x >= 10) goto TuningServo4; //Счётчик до 10
-    x = x++;
   }
   Pisk();
   display.clearDisplay();
