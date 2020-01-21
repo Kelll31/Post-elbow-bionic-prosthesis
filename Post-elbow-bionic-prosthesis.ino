@@ -1,3 +1,25 @@
+/*
+MMMMMMMMMMMMMMMNc    NMMk     kMMN    cNMMMMMMMMMMMMMMMM
+MMMMMMMMMMMMMMMNc    kOOl     lOOk    cNMMN00OKNMMWKO0OO
+MMMMMMMMMMMMMMMNc                     cNMMk    0MMX    X
+MMMMMMMMMMMMMMMNc                     cNMMO    xKKO    X
+MMMMMMMMMMMMMMMNc                     cNMMWXXXk    dXXXX
+MMMMMMMMMMMMNXXKc                     cKXXNMMM0    xMMMM
+MMMMMMMMMMMXl                             lXMM0    xMMMM
+MMMMMMMMWWW0                               0WWO    xMMMM
+MMMMMMMKc       kkOkk             kkOkk            xMMMM
+MMMMMMMO        oWWWd             oWWWd            xMMMM
+MMM0c           kkOkk             kkOkk        cxxkXMMMM
+MMMx                                           OMMMMMMMM
+MMMx    coox                               cooxXMMMMMMMM
+MMMX    0MMK                               KMMMMMMMMMMMM
+lllX    0MMK     clllllllllllllllllllc     KMMMMMMMMMMMM
+        0MMK     WMMMMMMMMMMMMMMMMMMMW     KMMMMMMMMMMMM
+        0MMN     dddddddONMMMNOddddddd     NMMMMMMMMMMMM
+MMMX    0MMMMMMNc        KMMMK        cNMMMMMMMMMMMMMMMM
+MMMX    0MMMMMMNc        KMMM0        cNMMMMMMMMMMMMMMMM
+                   Kelll31 technology
+*/
 #include <Servo.h> // Подключаем библиотеку
 #include <Wire.h> // Подключаем библиотеку
 #include <EEPROM.h> // Подключаем библиотеку
