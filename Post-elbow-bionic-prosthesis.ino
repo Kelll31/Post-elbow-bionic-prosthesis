@@ -1,25 +1,28 @@
 /*
-MMMMMMMMMMMMMMMNc    NMMk     kMMN    cNMMMMMMMMMMMMMMMM
-MMMMMMMMMMMMMMMNc    kOOl     lOOk    cNMMN00OKNMMWKO0OO
-MMMMMMMMMMMMMMMNc                     cNMMk    0MMX    X
-MMMMMMMMMMMMMMMNc                     cNMMO    xKKO    X
-MMMMMMMMMMMMMMMNc                     cNMMWXXXk    dXXXX
-MMMMMMMMMMMMNXXKc                     cKXXNMMM0    xMMMM
-MMMMMMMMMMMXl                             lXMM0    xMMMM
-MMMMMMMMWWW0                               0WWO    xMMMM
-MMMMMMMKc       kkOkk             kkOkk            xMMMM
-MMMMMMMO        oWWWd             oWWWd            xMMMM
-MMM0c           kkOkk             kkOkk        cxxkXMMMM
-MMMx                                           OMMMMMMMM
-MMMx    coox                               cooxXMMMMMMMM
-MMMX    0MMK                               KMMMMMMMMMMMM
-lllX    0MMK     clllllllllllllllllllc     KMMMMMMMMMMMM
+  MMMMMMMMMMMMMMMNc    NMMk     kMMN    cNMMMMMMMMMMMMMMMM
+  MMMMMMMMMMMMMMMNc    kOOl     lOOk    cNMMN00OKNMMWKO0OO
+  MMMMMMMMMMMMMMMNc                     cNMMk    0MMX    X
+  MMMMMMMMMMMMMMMNc                     cNMMO    xKKO    X
+  MMMMMMMMMMMMMMMNc                     cNMMWXXXk    dXXXX
+  MMMMMMMMMMMMNXXKc                     cKXXNMMM0    xMMMM
+  MMMMMMMMMMMXl                             lXMM0    xMMMM
+  MMMMMMMMWWW0                               0WWO    xMMMM
+  MMMMMMMKc       kkOkk             kkOkk            xMMMM
+  MMMMMMMO        oWWWd             oWWWd            xMMMM
+  MMM0c           kkOkk             kkOkk        cxxkXMMMM
+  MMMx                                           OMMMMMMMM
+  MMMx    coox                               cooxXMMMMMMMM
+  MMMX    0MMK                               KMMMMMMMMMMMM
+  lllX    0MMK     clllllllllllllllllllc     KMMMMMMMMMMMM
         0MMK     WMMMMMMMMMMMMMMMMMMMW     KMMMMMMMMMMMM
         0MMN     dddddddONMMMNOddddddd     NMMMMMMMMMMMM
-MMMX    0MMMMMMNc        KMMMK        cNMMMMMMMMMMMMMMMM
-MMMX    0MMMMMMNc        KMMM0        cNMMMMMMMMMMMMMMMM
+  MMMX    0MMMMMMNc        KMMMK        cNMMMMMMMMMMMMMMMM
+  MMMX    0MMMMMMNc        KMMM0        cNMMMMMMMMMMMMMMMM
                    Kelll31 technology
 */
+
+
+
 #include <Servo.h> // Подключаем библиотеку
 #include <Wire.h> // Подключаем библиотеку
 #include <EEPROM.h> // Подключаем библиотеку
@@ -27,6 +30,7 @@ MMMX    0MMMMMMNc        KMMM0        cNMMMMMMMMMMMMMMMM
 #include <Adafruit_GFX.h> // Подключаем библиотеку
 #include <Adafruit_SSD1306.h> // Подключаем библиотеку
 #include "FreeMono7.h" // Русский шрифт
+#include "bmp.h" // Подключаем лого
 
 #define korector 12 // Задаем корректор чистки
 #define ElectrodeR 10
@@ -79,27 +83,30 @@ int val_1[3]; // Среднее арифметические 2 (Массив)
 int Srednie_0; // Среднее арифметические 1 (Целое единственное число)
 int Srednie_1; // Среднее арифметические 2 (Целое единственное число)
 int Summa1[10]; //Сумма для работы с датчиком
-int SummaDo1; //Сумма для работы с памятью (действие 1)
-int SummaDo2; //Сумма для работы с памятью (действие 2)
-int SummaDo3; //Сумма для работы с памятью (действие 3)
-int SummaDo4; //Сумма для работы с памятью (действие 4)
+float SummaDo1; //Сумма для работы с памятью (действие 1)
+float SummaDo2; //Сумма для работы с памятью (действие 2)
+float SummaDo3; //Сумма для работы с памятью (действие 3)
+float SummaDo4; //Сумма для работы с памятью (действие 4)
+float SummaDoALL;
 int ServoMemory[20];
 byte  flash[3000]; //Значения во flash
 byte KorektorSravnenia;
 byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
+
 void setup() {
-//========================================================================================
+  //========================================================================================
 #if FASTADC
   sbi(ADCSRA, ADPS2) ;
   cbi(ADCSRA, ADPS1) ; // Для лютого ускореня Аналогово чтения
   cbi(ADCSRA, ADPS0) ;
 #endif
-//========================================================================================
+  //========================================================================================
   y = 0;
   i = 0;
   x = 0;
+  Serial.begin(115200);
   pinMode(KeyA, INPUT);
   pinMode(KeyB, INPUT);
   pinMode(ElectrodeR, INPUT);
@@ -122,6 +129,7 @@ void setup() {
   display.setCursor(10, 10);
   display.println("Kelll31");
   display.println("Technology");
+  display.drawBitmap(80, 0, Pixel_lord, 0xD, 0x9, WHITE);
   display.display();
   delay(3000);
   if ((digitalRead(KeyA) > 0) && (digitalRead(KeyB)  > 0))  {
@@ -209,7 +217,9 @@ void ServoDo4() {
 }
 
 void Logic() {
-
+  chistkaAndUsrednenie();
+  SummaDoALL = 0;
+  SummaDoALL = Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9];
   display.clearDisplay();
   display.setCursor(10, 10);
   display.println("Нормальный");
@@ -217,12 +227,23 @@ void Logic() {
   display.println("режим");
   display.setCursor(10, 40);
   display.println(Srednie_1);
+  display.setCursor(50, 40);
+  display.println(SummaDoALL);
+  display.setCursor(90, 40);
+  display.println(SummaDo1);
   display.display();
-  delay(3);
-  chistka();
-  Usrednenie();
+  Serial.print("SummaDoALL = ");
+  Serial.print(SummaDoALL);
+  Serial.println(" ");
+  Serial.print("SummaDo1 = ");
+  Serial.print(SummaDo1);
+  Serial.println(" ");
+  Serial.print("SummaDo2 = ");
+  Serial.print(SummaDo2);
+  Serial.println(" ");
   i = 0;
-  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo1) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo1))) >= KorektorSravnenia) {
+  if ((((min(SummaDoALL,  SummaDo1) * 100) / max(SummaDoALL, SummaDo1))) >= KorektorSravnenia) {
+    Serial.println("1EBATVALERA");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       ServoDo1();
       i = i++;
@@ -230,7 +251,7 @@ void Logic() {
     }
   }
   i = 750;
-  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo2) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo2))) >= KorektorSravnenia) {
+  if ((((min(SummaDoALL,  SummaDo2) * 100) / max(SummaDoALL, SummaDo2))) >= KorektorSravnenia) {
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       ServoDo2();
       i = i++;
@@ -238,7 +259,7 @@ void Logic() {
     }
   }
   i = 1500;
-  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo3) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo3))) >= KorektorSravnenia) {
+  if ((((min(SummaDoALL,  SummaDo3) * 100) / max(SummaDoALL, SummaDo3))) >= KorektorSravnenia) {
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       ServoDo4();
       i = i++;
@@ -246,14 +267,14 @@ void Logic() {
     }
   }
   i = 2250;
-  if ((((min(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9],  SummaDo4) * 100) / max(Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9], SummaDo4))) >= KorektorSravnenia) {
+  if ((((min(SummaDoALL,  SummaDo4) * 100) / max(SummaDoALL, SummaDo4))) >= KorektorSravnenia) {
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       ServoDo3();
       i = i++;
       if (i > 2999) i = 2969;
     }
   }
-
+  Serial.println("0GOVNOOOOOOOOOOOOOOO");
 }
 
 void TuningServo1() {
@@ -276,15 +297,19 @@ TuningServo1:
     display.println("значения с");
     display.setCursor(10, 40);
     display.println("датчика");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
-    chistka();
-    Usrednenie();
-    Srednie_1 = flash[i];
+    chistkaAndUsrednenie();
+    flash[i] = Srednie_1;
     i = i + 1;
-    SummaDo1 = SummaDo1 + Srednie_1;
     if (x >= 10) goto TuningServo1; //Счётчик до 10
+    SummaDo1 = SummaDo1 + Srednie_1;
+    display.setCursor(50, 55);
+    display.println(SummaDo1);
     x = x++;
   }
+  EEPROM.put(3040, SummaDo1);
   i = 0;
   while (i < 750) {
     display.clearDisplay();
@@ -294,6 +319,8 @@ TuningServo1:
     display.println("данные в");
     display.setCursor(10, 40);
     display.println("память...");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
     EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
@@ -369,16 +396,19 @@ TuningServo2:
     display.println("значения с");
     display.setCursor(10, 40);
     display.println("датчика");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    Srednie_1 = flash[i];
+    chistkaAndUsrednenie();
+    flash[i] = Srednie_1;
     i = i + 1;
-    SummaDo2 = SummaDo2 + Srednie_1;
     if (x >= 10) goto TuningServo2; //Счётчик до 10
+    SummaDo2 = SummaDo2 + Srednie_1;
+    display.setCursor(50, 55);
+    display.println(SummaDo2);
     x = x++;
   }
+  EEPROM.put(3060, SummaDo2);
   i = 0;
   while (i < 1500) {
     display.clearDisplay();
@@ -388,6 +418,8 @@ TuningServo2:
     display.println("данные в");
     display.setCursor(10, 40);
     display.println("память...");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
     EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
@@ -463,16 +495,19 @@ TuningServo3:
     display.println("значения с");
     display.setCursor(10, 40);
     display.println("датчика");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    Srednie_1 = flash[i];
+    chistkaAndUsrednenie();
+    flash[i] = Srednie_1;
     i = i + 1;
-    SummaDo3 = SummaDo3 + Srednie_1;
     if (x >= 10) goto TuningServo3; //Счётчик до 10
+    SummaDo3 = SummaDo3 + Srednie_1;
+    display.setCursor(50, 55);
+    display.println(SummaDo3);
     x = x++;
   }
+  EEPROM.put(3080, SummaDo3);
   i = 0;
   while (i < 2250) {
     display.clearDisplay();
@@ -482,6 +517,8 @@ TuningServo3:
     display.println("данные в");
     display.setCursor(10, 40);
     display.println("память...");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
     EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
@@ -558,16 +595,19 @@ TuningServo4:
     display.println("значения с");
     display.setCursor(10, 40);
     display.println("датчика");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
-    chistka();
-    Usrednenie();
-    delay(3);
-    Srednie_1 = flash[i];
+    chistkaAndUsrednenie();
+    flash[i] = Srednie_1;
     i = i + 1;
-    SummaDo4 = SummaDo4 + Srednie_1;
     if (x >= 10) goto TuningServo4; //Счётчик до 10
+    SummaDo4 = SummaDo4 + Srednie_1;
+    display.setCursor(50, 55);
+    display.println(SummaDo4);
     x = x++;
   }
+  EEPROM.put(3100, SummaDo4);
   i = 0;
   while (i < 2250) {
     display.clearDisplay();
@@ -577,6 +617,8 @@ TuningServo4:
     display.println("данные в");
     display.setCursor(10, 40);
     display.println("память...");
+    display.setCursor(10, 55);
+    display.println(i);
     display.display();
     EEPROM.update(i, flash[i]); //Кидаем во flash для ускорения обрабатывания
     i = i + 1;
@@ -641,6 +683,10 @@ void SearchValues() {
   display.setCursor(10, 25);
   display.println("памяти...");
   display.display();
+  SummaDo1 = EEPROM.get(3040, SummaDo1); //Первые 10 значений при отладке
+  SummaDo2 = EEPROM.get(3060, SummaDo2); //Первые 10 значений при отладке
+  SummaDo3 = EEPROM.get(3080, SummaDo3); //Первые 10 значений при отладке
+  SummaDo4 = EEPROM.get(3100, SummaDo4); //Первые 10 значений при отладке
   while (i < 2999) {
     display.clearDisplay();
     display.setCursor(10, 10);
@@ -651,8 +697,15 @@ void SearchValues() {
     display.println(i);
     display.display();
     flash[i] = EEPROM.read(i);
+    Serial.print(i);
+    Serial.print("\t");
+    Serial.println(flash[i]);
     i = i + 1;
   }
+  SummaDo1 = EEPROM.get(3040, SummaDo1); //Первые 10 значений при отладке X2
+  SummaDo2 = EEPROM.get(3060, SummaDo2); //Первые 10 значений при отладке X2
+  SummaDo3 = EEPROM.get(3080, SummaDo3); //Первые 10 значений при отладке X2
+  SummaDo4 = EEPROM.get(3100, SummaDo4); //Первые 10 значений при отладке X2
   display.clearDisplay();
   display.setCursor(10, 10);
   display.println("Роемся в ");
@@ -691,7 +744,7 @@ void proverka() {
 
 }
 
-void chistka() {
+void chistkaAndUsrednenie() {
 
   SignalSDatchika = analogRead(A0);
 
@@ -699,10 +752,6 @@ void chistka() {
   val_0[index] = SignalSDatchika; // записываем значение с датчика в массив
   val_1[index] = Srednie_0;
   index = index + 1;
-
-}
-
-void Usrednenie() {
 
   if (SignalSDatchika >= korector) {
     Srednie_0 = (val_0[0] + val_0[1] + val_0[2]) / 3; //Первый этап усреднения
@@ -714,4 +763,5 @@ void Usrednenie() {
   if (x > 9) x = 0;
   Summa1[x] = Srednie_1;
   x = x++;
+
 }
