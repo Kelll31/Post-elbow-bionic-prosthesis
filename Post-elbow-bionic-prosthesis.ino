@@ -106,7 +106,6 @@ void setup() {
   y = 0;
   i = 0;
   x = 0;
-  Serial.begin(115200);
   pinMode(KeyA, INPUT);
   pinMode(KeyB, INPUT);
   pinMode(ElectrodeR, INPUT);
@@ -232,18 +231,8 @@ void Logic() {
   display.setCursor(90, 40);
   display.println(SummaDo1);
   display.display();
-  Serial.print("SummaDoALL = ");
-  Serial.print(SummaDoALL);
-  Serial.println(" ");
-  Serial.print("SummaDo1 = ");
-  Serial.print(SummaDo1);
-  Serial.println(" ");
-  Serial.print("SummaDo2 = ");
-  Serial.print(SummaDo2);
-  Serial.println(" ");
   i = 0;
   if ((((min(SummaDoALL,  SummaDo1) * 100) / max(SummaDoALL, SummaDo1))) >= KorektorSravnenia) {
-    Serial.println("1EBATVALERA");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       ServoDo1();
       i = i++;
@@ -274,7 +263,6 @@ void Logic() {
       if (i > 2999) i = 2969;
     }
   }
-  Serial.println("0GOVNOOOOOOOOOOOOOOO");
 }
 
 void TuningServo1() {
@@ -697,9 +685,6 @@ void SearchValues() {
     display.println(i);
     display.display();
     flash[i] = EEPROM.read(i);
-    Serial.print(i);
-    Serial.print("\t");
-    Serial.println(flash[i]);
     i = i + 1;
   }
   SummaDo1 = EEPROM.get(3040, SummaDo1); //Первые 10 значений при отладке X2
