@@ -125,11 +125,9 @@ void setup() {
   display.setTextColor(WHITE);
   display.setFont(&FreeMono7pt8b);
   display.clearDisplay();
-  display.setCursor(10, 10);
-  display.println("Kelll31");
-  display.println("Technology");
-  display.drawBitmap(80, 0, Pixel_lord, 0xD, 0x9, WHITE);
+  display.drawBitmap(0, 0, Pixel_lord, 128, 64, WHITE);
   display.display();
+  
   delay(3000);
   if ((digitalRead(KeyA) > 0) && (digitalRead(KeyB)  > 0))  {
     display.clearDisplay();
