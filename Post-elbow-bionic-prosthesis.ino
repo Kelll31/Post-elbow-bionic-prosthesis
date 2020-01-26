@@ -40,8 +40,8 @@
 #define TranzistorsA 2
 #define TranzistorsB 3
 #define TranzistorsC 4
-#define KeyA 7
-#define KeyB 8
+#define KeyA 30
+#define KeyB 31
 
 #define potmizinec A1
 #define potbezimani A2
