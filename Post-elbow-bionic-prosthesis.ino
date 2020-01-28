@@ -93,7 +93,7 @@ float SummaProcent4;
 float SummaDoALL;
 int ServoMemory[20];
 byte  flash[3000]; //Значения во flash
-byte KorektorSravnenia;
+float KorektorSravnenia;
 byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
 byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
 
@@ -227,10 +227,10 @@ void Logic() {
   SummaDoALL = 0;
   chistkaAndUsrednenie();
   SummaDoALL = Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9];
-  SummaProcent1 = (((min(SummaDoALL,  SummaDo1) * 100) / max(SummaDoALL, SummaDo1)));
-  SummaProcent2 = (((min(SummaDoALL,  SummaDo2) * 100) / max(SummaDoALL, SummaDo2)));
-  SummaProcent3 = (((min(SummaDoALL,  SummaDo3) * 100) / max(SummaDoALL, SummaDo3)));
-  SummaProcent4 = (((min(SummaDoALL,  SummaDo4) * 100) / max(SummaDoALL, SummaDo4)));
+  SummaProcent1 = ((min(SummaDoALL,  SummaDo1) * 100) / (max(SummaDoALL, SummaDo1)));
+  SummaProcent2 = ((min(SummaDoALL,  SummaDo2) * 100) / (max(SummaDoALL, SummaDo2)));
+  SummaProcent3 = ((min(SummaDoALL,  SummaDo3) * 100) / (max(SummaDoALL, SummaDo3)));
+  SummaProcent4 = ((min(SummaDoALL,  SummaDo4) * 100) / (max(SummaDoALL, SummaDo4)));
   i = 0;
   if (SummaProcent1 >= KorektorSravnenia) {
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
@@ -263,17 +263,16 @@ void Logic() {
       if (i > 2999) i = 2969;
     }
   }
+  SummaProcent1 = max(max(SummaProcent1, SummaProcent2), max(SummaProcent3, SummaProcent4));
   display.clearDisplay();
   display.setCursor(10, 10);
   display.println("Нормальный");
   display.setCursor(10, 25);
   display.println("режим");
   display.setCursor(10, 40);
-  display.println(Srednie_1);
-  display.setCursor(50, 40);
   display.println(SummaDoALL);
-  display.setCursor(90, 40);
-  display.println(SummaDo1);
+  display.setCursor(80, 40);
+  display.println(SummaProcent1);
   display.display();
 }
 
@@ -288,10 +287,17 @@ void Menu() {
     display.setCursor(10, 25);
     display.println("корректорения");
     display.setCursor(10, 40);
-    display.println(KorektorSravnenia);
+    display.print(KorektorSravnenia);
+    display.print("%");
     display.display();
-    if (digitalRead(KeyA) == 1)KorektorSravnenia = KorektorSravnenia + 1;
-    if (digitalRead(KeyB) == 1)KorektorSravnenia = KorektorSravnenia - 1;
+    if ((digitalRead(KeyA) == 1) && (KorektorSravnenia < 100) && ((digitalRead(KeyB) == 0))) {
+      KorektorSravnenia = KorektorSravnenia + 0.5;
+      delay(70);
+    }
+    if ((digitalRead(KeyB) == 1) && (KorektorSravnenia > 0) && ((digitalRead(KeyA) == 0))) {
+      KorektorSravnenia = KorektorSravnenia - 0.5;
+      delay(70);
+    }
     if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB)  == 1)) timer = timer + 1;
     else {
       timer = 0;
@@ -301,6 +307,7 @@ void Menu() {
       timer = 0;
     }
   }
+  Pisk();
 }
 
 void TuningServo1() {
