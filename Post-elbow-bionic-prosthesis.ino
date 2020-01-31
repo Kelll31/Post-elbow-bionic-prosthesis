@@ -94,11 +94,10 @@ float SummaDoALL;
 int ServoMemory[20];
 byte  flash[3000]; //Значения во flash
 float KorektorSravnenia;
-byte levo8bit[] = {  B00010,  B00011,  B00111,  B01101,  B11111,  B10111,  B10100,  B10011};
-byte pravo8bit[] = {   B01010,  B11001,  B11101,  B10111,  B11110,  B11100,  B00100,  B11000};
-
+byte Flag;
 
 void setup() {
+  Serial.begin(115200);
   //========================================================================================
 #if FASTADC
   sbi(ADCSRA, ADPS2) ;
@@ -121,7 +120,7 @@ void setup() {
   big.attach(36);
   ladon.attach(37);
   povorot.attach(38);
-  KorektorSravnenia = 93; //Основной корректор сравнения для логики
+  KorektorSravnenia = 50; //Основной корректор сравнения для логики
 
   display.begin(SSD1306_SWITCHCAPVCC);  // Инициализируем Oled
   display.setTextSize(1);
@@ -130,7 +129,6 @@ void setup() {
   display.clearDisplay();
   display.drawBitmap(0, 0, Pixel_lord, 128, 64, WHITE);
   display.display();
-
   delay(3000);
   if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB)  == 1))  {
     display.clearDisplay();
@@ -227,43 +225,58 @@ void Logic() {
   SummaDoALL = 0;
   chistkaAndUsrednenie();
   SummaDoALL = Summa1[0] + Summa1[1] + Summa1[2] + Summa1[3] + Summa1[4] + Summa1[5] + Summa1[6] + Summa1[7] + Summa1[8] + Summa1[9];
-  SummaProcent1 = ((min(SummaDoALL,  SummaDo1) * 100) / (max(SummaDoALL, SummaDo1)));
-  SummaProcent2 = ((min(SummaDoALL,  SummaDo2) * 100) / (max(SummaDoALL, SummaDo2)));
-  SummaProcent3 = ((min(SummaDoALL,  SummaDo3) * 100) / (max(SummaDoALL, SummaDo3)));
-  SummaProcent4 = ((min(SummaDoALL,  SummaDo4) * 100) / (max(SummaDoALL, SummaDo4)));
+  SummaProcent1 = (min(SummaDoALL,  SummaDo1) / max(SummaDoALL, SummaDo1) * 100);  // ((Минимум / максимум) * 100)
+  SummaProcent2 = (min(SummaDoALL,  SummaDo2) / max(SummaDoALL, SummaDo2) * 100);  // ((Минимум / максимум) * 100)
+  SummaProcent3 = (min(SummaDoALL,  SummaDo3) / max(SummaDoALL, SummaDo3) * 100);  // ((Минимум / максимум) * 100)
+  SummaProcent4 = (min(SummaDoALL,  SummaDo4) / max(SummaDoALL, SummaDo4) * 100);  // ((Минимум / максимум) * 100)
   i = 0;
-  if (SummaProcent1 >= KorektorSravnenia) {
+
+  if (SummaProcent1 > (max(SummaProcent2, max(SummaProcent3, SummaProcent4))))Flag = 1;
+  if (SummaProcent2 > (max(SummaProcent1, max(SummaProcent3, SummaProcent4))))Flag = 2;
+  if (SummaProcent3 > (max(SummaProcent2, max(SummaProcent1, SummaProcent4))))Flag = 3;
+  if (SummaProcent4 > (max(SummaProcent2, max(SummaProcent3, SummaProcent1))))Flag = 4;
+
+  if (SummaProcent1 >= KorektorSravnenia && Flag == 1) {
+    Serial.println("do1");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      Serial.println("while1");
       ServoDo1();
       i = i + 1;
       if (i > 749) i = 720;
     }
   }
   i = 750;
-  if (SummaProcent2 >= KorektorSravnenia) {
+  if (SummaProcent2 >= KorektorSravnenia && Flag == 2) {
+    Serial.println("do2");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      Serial.println("while2");
       ServoDo2();
       i = i + 1;
       if (i > 1499) i = 1470;
     }
   }
   i = 1500;
-  if (SummaProcent3 >= KorektorSravnenia) {
+  if (SummaProcent3 >= KorektorSravnenia && Flag == 3) {
+    Serial.println("do3");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      Serial.println("while3");
       ServoDo4();
       i = i + 1;
       if (i > 2249) i = 2220;
     }
   }
   i = 2250;
-  if (SummaProcent4 >= KorektorSravnenia) {
+  if (SummaProcent4 >= KorektorSravnenia && Flag == 4) {
+    Serial.println("do4");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
+      Serial.println("while4");
       ServoDo3();
       i = i + 1;
       if (i > 2999) i = 2969;
     }
   }
-  SummaProcent1 = max(max(SummaProcent1, SummaProcent2), max(SummaProcent3, SummaProcent4));
+  Flag = 0;
+  SummaProcent1 = max(SummaProcent1, SummaProcent4);
   display.clearDisplay();
   display.setCursor(10, 10);
   display.println("Нормальный");
@@ -274,9 +287,11 @@ void Logic() {
   display.setCursor(80, 40);
   display.println(SummaProcent1);
   display.display();
+
 }
 
 void Menu() {
+  timer = 0;
   Pisk();
   display.clearDisplay();
   delay(2000);
@@ -285,7 +300,7 @@ void Menu() {
     display.setCursor(10, 10);
     display.println("Изменить");
     display.setCursor(10, 25);
-    display.println("корректорения");
+    display.println("корректор");
     display.setCursor(10, 40);
     display.print(KorektorSravnenia);
     display.print("%");
@@ -342,7 +357,7 @@ TuningServo1:
     display.println(SummaDo1);
     x = x + 1;
   }
-  EEPROM.put(3040, SummaDo1);
+  EEPROM.put(3040, SummaDo1); //Сумма 10 значений при отладке
   i = 0;
   while (i < 750) {
     display.clearDisplay();
@@ -441,7 +456,7 @@ TuningServo2:
     display.println(SummaDo2);
     x = x + 1;
   }
-  EEPROM.put(3060, SummaDo2);
+  EEPROM.put(3060, SummaDo2); //Сумма 10 значений при отладке
   i = 0;
   while (i < 1500) {
     display.clearDisplay();
@@ -540,7 +555,7 @@ TuningServo3:
     display.println(SummaDo3);
     x = x + 1;
   }
-  EEPROM.put(3080, SummaDo3);
+  EEPROM.put(3080, SummaDo3); //Сумма 10 значений при отладке
   i = 0;
   while (i < 2250) {
     display.clearDisplay();
@@ -640,7 +655,7 @@ TuningServo4:
     display.println(SummaDo4);
     x = x + 1;
   }
-  EEPROM.put(3100, SummaDo4);
+  EEPROM.put(3100, SummaDo4); //Сумма 10 значений при отладке
   i = 0;
   while (i < 2250) {
     display.clearDisplay();
@@ -716,10 +731,15 @@ void SearchValues() {
   display.setCursor(10, 25);
   display.println("памяти...");
   display.display();
-  SummaDo1 = EEPROM.get(3040, SummaDo1); //Первые 10 значений при отладке
-  SummaDo2 = EEPROM.get(3060, SummaDo2); //Первые 10 значений при отладке
-  SummaDo3 = EEPROM.get(3080, SummaDo3); //Первые 10 значений при отладке
-  SummaDo4 = EEPROM.get(3100, SummaDo4); //Первые 10 значений при отладке
+  SummaDo1 = EEPROM.get(3040, SummaDo1); //Сумма 10 значений при отладке
+  SummaDo2 = EEPROM.get(3060, SummaDo2); //Сумма 10 значений при отладке
+  SummaDo3 = EEPROM.get(3080, SummaDo3); //Сумма 10 значений при отладке
+  SummaDo4 = EEPROM.get(3100, SummaDo4); //Сумма 10 значений при отладке
+  Serial.println(SummaDo1);
+  Serial.println(SummaDo2);
+  Serial.println(SummaDo3);
+  Serial.println(SummaDo4);
+
   while (i < 2999) {
 NormalEEPROM:
     if ((digitalRead(KeyA) == 1) && (digitalRead(KeyB)  == 1))timer = timer + 1;
@@ -741,8 +761,6 @@ NormalEEPROM:
         if (digitalRead(KeyB) == 1)goto NormalEEPROM;
         if (digitalRead(KeyA) == 1)goto OtmenaEEPROM;
       }
-
-
     }
     display.clearDisplay();
     display.setCursor(10, 10);
@@ -755,10 +773,6 @@ NormalEEPROM:
     flash[i] = EEPROM.read(i);
     i = i + 1;
   }
-  SummaDo1 = EEPROM.get(3040, SummaDo1); //Первые 10 значений при отладке X2
-  SummaDo2 = EEPROM.get(3060, SummaDo2); //Первые 10 значений при отладке X2
-  SummaDo3 = EEPROM.get(3080, SummaDo3); //Первые 10 значений при отладке X2
-  SummaDo4 = EEPROM.get(3100, SummaDo4); //Первые 10 значений при отладке X2
 OtmenaEEPROM:
   display.clearDisplay();
   display.setCursor(10, 10);
@@ -813,7 +827,7 @@ void chistkaAndUsrednenie() {
   if (val_1[0] >= 1 && val_1[1] >= 1 && val_1[2] >= 1) {
     Srednie_1 = (val_1[0] + val_1[1] + val_1[2]) / 3; //Второй этап усреднения
   }
-  Srednie_1 = map(Srednie_1, 0, 900, 0, 255);
+  Srednie_1 = map(Srednie_1, 0, 920, 0, 255);
   if (x > 9) x = 0;
   Summa1[x] = Srednie_1;
   x = x + 1;
