@@ -34,7 +34,7 @@
 #define ElectrodeR 10
 #define ElectrodeL 11
 #define Pishalka 12
-#define AllServo 1
+#define AllServo 5
 #define TranzistorsA 2
 #define TranzistorsB 3
 #define TranzistorsC 4
@@ -230,13 +230,12 @@ void Logic() {
   SummaProcent3 = (min(SummaDoALL,  SummaDo3) / max(SummaDoALL, SummaDo3) * 100);  // ((Минимум / максимум) * 100)
   SummaProcent4 = (min(SummaDoALL,  SummaDo4) / max(SummaDoALL, SummaDo4) * 100);  // ((Минимум / максимум) * 100)
   i = 0;
-
   if (SummaProcent1 > (max(SummaProcent2, max(SummaProcent3, SummaProcent4))))Flag = 1;
   if (SummaProcent2 > (max(SummaProcent1, max(SummaProcent3, SummaProcent4))))Flag = 2;
-  if (SummaProcent3 > (max(SummaProcent2, max(SummaProcent1, SummaProcent4))))Flag = 3;
-  if (SummaProcent4 > (max(SummaProcent2, max(SummaProcent3, SummaProcent1))))Flag = 4;
+  if (SummaProcent3 > (max(SummaProcent1, max(SummaProcent2, SummaProcent4))))Flag = 3;
+  if (SummaProcent4 > (max(SummaProcent1, max(SummaProcent2, SummaProcent3))))Flag = 4;
 
-  if (SummaProcent1 >= KorektorSravnenia && Flag == 1) {
+  if (SummaProcent1 >= KorektorSravnenia ) { //&& Flag == 1
     Serial.println("do1");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       Serial.println("while1");
@@ -246,7 +245,7 @@ void Logic() {
     }
   }
   i = 750;
-  if (SummaProcent2 >= KorektorSravnenia && Flag == 2) {
+  if (SummaProcent2 >= KorektorSravnenia ) { //&& Flag == 2
     Serial.println("do2");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       Serial.println("while2");
@@ -256,7 +255,7 @@ void Logic() {
     }
   }
   i = 1500;
-  if (SummaProcent3 >= KorektorSravnenia && Flag == 3) {
+  if (SummaProcent3 >= KorektorSravnenia ) { //&& Flag == 3
     Serial.println("do3");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       Serial.println("while3");
@@ -266,7 +265,7 @@ void Logic() {
     }
   }
   i = 2250;
-  if (SummaProcent4 >= KorektorSravnenia && Flag == 4) {
+  if (SummaProcent4 >= KorektorSravnenia ) { //&& Flag == 4
     Serial.println("do4");
     while ((((min(Srednie_1,  flash[i]) * 100) / max(Srednie_1, flash[i]))) >= KorektorSravnenia) {
       Serial.println("while4");
@@ -275,8 +274,7 @@ void Logic() {
       if (i > 2999) i = 2969;
     }
   }
-  Flag = 0;
-  SummaProcent1 = max(SummaProcent1, SummaProcent4);
+  SummaProcent1 = max(SummaProcent2, max(SummaProcent3, SummaProcent4));
   display.clearDisplay();
   display.setCursor(10, 10);
   display.println("Нормальный");
@@ -286,7 +284,13 @@ void Logic() {
   display.println(SummaDoALL);
   display.setCursor(80, 40);
   display.println(SummaProcent1);
+  display.setCursor(10, 60);
+  if (Flag == 1)display.println("Do1");
+  if (Flag == 2)display.println("Do2");
+  if (Flag == 3)display.println("Do3");
+  if (Flag == 4)display.println("Do4");
   display.display();
+  Flag = 0;
 
 }
 
@@ -337,7 +341,6 @@ void TuningServo1() {
   delay(2000);
   Pisk();
   while (i < 750) {
-TuningServo1:
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Считываем");
@@ -347,15 +350,13 @@ TuningServo1:
     display.println("датчика");
     display.setCursor(10, 55);
     display.println(i);
+    display.setCursor(50, 55);
+    display.println(SummaDo1);
     display.display();
     chistkaAndUsrednenie();
     flash[i] = Srednie_1;
     i = i + 1;
-    if (x >= 10) goto TuningServo1; //Счётчик до 10
-    SummaDo1 = SummaDo1 + Srednie_1;
-    display.setCursor(50, 55);
-    display.println(SummaDo1);
-    x = x + 1;
+    if (i < 10 )  SummaDo1 = SummaDo1 + Srednie_1;//Счётчик до 10
   }
   EEPROM.put(3040, SummaDo1); //Сумма 10 значений при отладке
   i = 0;
@@ -436,7 +437,6 @@ void TuningServo2() {
   delay(2000);
   Pisk();
   while (i < 1500) {
-TuningServo2:
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Считываем");
@@ -446,15 +446,13 @@ TuningServo2:
     display.println("датчика");
     display.setCursor(10, 55);
     display.println(i);
+    display.setCursor(50, 55);
+    display.println(SummaDo2);
     display.display();
     chistkaAndUsrednenie();
     flash[i] = Srednie_1;
     i = i + 1;
-    if (x >= 10) goto TuningServo2; //Счётчик до 10
-    SummaDo2 = SummaDo2 + Srednie_1;
-    display.setCursor(50, 55);
-    display.println(SummaDo2);
-    x = x + 1;
+    if (i < 760 )  SummaDo2 = SummaDo2 + Srednie_1;//Счётчик до 10
   }
   EEPROM.put(3060, SummaDo2); //Сумма 10 значений при отладке
   i = 0;
@@ -535,7 +533,6 @@ void TuningServo3() {
   delay(2000);
   Pisk();
   while (i < 2250) {
-TuningServo3:
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Считываем");
@@ -545,15 +542,13 @@ TuningServo3:
     display.println("датчика");
     display.setCursor(10, 55);
     display.println(i);
+    display.setCursor(50, 55);
+    display.println(SummaDo3);
     display.display();
     chistkaAndUsrednenie();
     flash[i] = Srednie_1;
     i = i + 1;
-    if (x >= 10) goto TuningServo3; //Счётчик до 10
-    SummaDo3 = SummaDo3 + Srednie_1;
-    display.setCursor(50, 55);
-    display.println(SummaDo3);
-    x = x + 1;
+    if (i < 1510 )  SummaDo3 = SummaDo3 + Srednie_1;//Счётчик до 10
   }
   EEPROM.put(3080, SummaDo3); //Сумма 10 значений при отладке
   i = 0;
@@ -635,7 +630,6 @@ void TuningServo4() {
   delay(2000);
   Pisk();
   while (i < 3000) {
-TuningServo4:
     display.clearDisplay();
     display.setCursor(10, 10);
     display.println("Считываем");
@@ -645,15 +639,13 @@ TuningServo4:
     display.println("датчика");
     display.setCursor(10, 55);
     display.println(i);
+    display.setCursor(50, 55);
+    display.println(SummaDo4);
     display.display();
     chistkaAndUsrednenie();
     flash[i] = Srednie_1;
     i = i + 1;
-    if (x >= 10) goto TuningServo4; //Счётчик до 10
-    SummaDo4 = SummaDo4 + Srednie_1;
-    display.setCursor(50, 55);
-    display.println(SummaDo4);
-    x = x + 1;
+    if (i < 2260 )  SummaDo4 = SummaDo4 + Srednie_1;//Счётчик до 10
   }
   EEPROM.put(3100, SummaDo4); //Сумма 10 значений при отладке
   i = 0;
